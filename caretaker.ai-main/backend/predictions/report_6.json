@@ -1,0 +1,14 @@
+[
+  {
+    "metric": "HbA1c",
+    "value": 5.25
+  },
+  {
+    "metric": "HDL",
+    "value": 52.01
+  },
+  {
+    "metric": "LDL",
+    "value": 150.01
+  }
+]

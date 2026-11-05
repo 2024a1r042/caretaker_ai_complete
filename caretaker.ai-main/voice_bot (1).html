@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTaker Voice Assistant</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #FDFBF7;
+            --pastel-mint: #B2F7EF;
+            --pastel-peach: #FFDAC1;
+            --pastel-lavender: #E2D1F9;
+            --primary: #4A90E2;
+        }
+
+        body#body {
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(at 20% 30%, var(--pastel-mint) 0px, transparent 55%),
+                radial-gradient(at 80% 10%, var(--pastel-peach) 0px, transparent 50%),
+                radial-gradient(at 40% 80%, var(--pastel-lavender) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, var(--pastel-mint) 0px, transparent 40%);
+            background-attachment: fixed;
+            background-size: 120% 120%;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+
+        @keyframes ripple {
+            0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70%  { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        .calling-animation { animation: ripple 1.5s infinite; }
+
+        /* Equalizer animation for music */
+        @keyframes eq-bar {
+            0%, 100% { height: 4px; }
+            50% { height: 16px; }
+        }
+        .eq-bar { display: inline-block; width: 3px; margin: 0 1px; background: #4A90E2; border-radius: 2px; animation: eq-bar 0.8s ease-in-out infinite; }
+        .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.1s; }
+    </style>
+</head>
+
+<body id="body" class="bg-slate-50 min-h-screen font-sans transition-colors duration-500 relative">
+
+    <!-- Header -->
+    <header id="header" class="bg-[#4A90E2] text-white p-4 shadow-lg transition-colors duration-500 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="profile.html" class="flex items-center text-white hover:text-blue-200 transition-colors"
+                    title="Back to Dashboard">
+                    <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
+                    <span class="hidden sm:inline">Dashboard</span>
+                </a>
+                <div class="h-6 w-px bg-white/30"></div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="activity" class="h-6 w-6"></i>
+                    <h1 class="text-xl font-bold">CareTaker Voice</h1>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Emergency Badge with Cancel Option -->
+                <div id="emergency-badge" class="hidden flex items-center gap-3">
+                    <div class="flex items-center bg-white text-red-600 px-4 py-1 rounded-full animate-pulse font-bold shadow-sm">
+                        <i data-lucide="alert-circle" class="h-4 w-4 mr-2"></i>
+                        EMERGENCY MODE
+                    </div>
+                    <button onclick="toggleEmergencyMode(false)"
+                        class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md transition-colors cursor-pointer border border-red-400">
+                        DISABLE MODE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Depression Alert Banner -->
+    <div id="depression-alert"
+        class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 shadow-md max-w-6xl mx-auto mt-4 rounded-r-lg"
+        role="alert">
+        <div class="flex">
+            <div class="py-1">
+                <svg class="fill-current h-6 w-6 text-yellow-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold">Emotional Wellness Notice</p>
+                <p class="text-sm">We've noticed you might be feeling a bit down lately. Remember, you're not alone and we are here to support you.</p>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left Column: Tools & Widgets -->
+        <div class="lg:col-span-1 space-y-4">
+
+            <!-- Music Player Widget (Hidden by default) -->
+            <div id="music-widget" class="hidden bg-white rounded-2xl shadow-sm p-4 border border-slate-100 mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-bold text-[#2c5282] flex items-center gap-2">
+                        <i data-lucide="music" class="h-4 w-4"></i>
+                        <span id="music-widget-title">Now Playing</span>
+                        <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                    </h3>
+                    <button onclick="controlMusic('stop')" class="text-slate-400 hover:text-red-500 cursor-pointer">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </button>
+                </div>
+
+                <!-- YouTube Iframe Container (for internet songs) -->
+                <div id="yt-container" class="w-full rounded-xl overflow-hidden shadow-sm hidden mb-3">
+                    <iframe id="yt-player" width="100%" height="80" src="" frameborder="0"
+                        allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+
+                <!-- Local Music Info -->
+                <div id="local-music-info" class="flex gap-3 items-center mb-3">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-slate-600 mb-0.5 truncate font-semibold" id="song-title">—</p>
+                        <p class="text-xs text-slate-400 truncate" id="song-genre">—</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="controlMusic('prev')"
+                        class="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors cursor-pointer">⏮</button>
+                    <button id="play-pause-btn" onclick="controlMusic('toggle')"
+                        class="flex-1 bg-blue-100 text-blue-700 py-2 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors cursor-pointer">⏸</button>
+                    <button onclick="controlMusic('next')"
+                        class="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors cursor-pointer">⏭</button>
+                </div>
+            </div>
+
+            <!-- Reminders Card -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-slate-500 text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="clock" class="h-4 w-4"></i> Active Reminders
+                    </h2>
+                    <button onclick="initDefaultReminders()" class="text-xs text-blue-500 hover:text-blue-700">Init Defaults</button>
+                </div>
+                <div id="reminders-list" class="space-y-2 max-h-40 overflow-y-auto mb-4">
+                    <p class="text-sm text-slate-400 italic" id="no-reminders-msg">Loading reminders...</p>
+                </div>
+
+                <form id="add-reminder-form" onsubmit="addReminder(event)" class="text-sm border-t border-slate-100 pt-3">
+                    <p class="font-semibold text-slate-600 mb-2">New Reminder</p>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="rem-text" placeholder="Drink water..."
+                            class="flex-1 px-2 py-1 border rounded" required>
+                        <input type="time" id="rem-time" class="w-24 px-2 py-1 border rounded" required>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-1 rounded">Add Reminder</button>
+                </form>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="space-y-2">
+                <button onclick="triggerEmergency()"
+                    class="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl flex items-center justify-center space-x-2 transition-colors border border-red-200 cursor-pointer">
+                    <i data-lucide="alert-circle" class="h-5 w-5"></i>
+                    <span class="font-semibold">Trigger Emergency</span>
+                </button>
+                <button onclick="startVideoCall()"
+                    class="w-full py-3 bg-[#ebf8ff] hover:bg-blue-100 text-[#2c5282] rounded-xl flex items-center justify-center space-x-2 transition-colors border border-blue-200 cursor-pointer">
+                    <i data-lucide="phone" class="h-5 w-5"></i>
+                    <span class="font-semibold">Call Caretaker</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Column: Chat Interface -->
+        <div class="lg:col-span-2 flex flex-col h-[650px] bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">
+
+            <!-- Chat Messages Area -->
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 chat-scroll">
+                <!-- Messages injected here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 bg-white border-t border-slate-100 relative">
+
+                <!-- Listening Indicator -->
+                <div id="listening-indicator"
+                    class="hidden absolute bottom-24 left-1/2 transform -translate-x-1/2 bg-[#4A90E2] text-white px-6 py-2 rounded-full text-sm font-medium animate-bounce shadow-lg flex items-center gap-2">
+                    <i data-lucide="mic" class="h-4 w-4 animate-pulse"></i> Listening... / सुन रहा हूँ...
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="mic-btn" onclick="toggleListening()"
+                        class="p-4 rounded-full transition-all duration-300 transform bg-[#4A90E2] hover:bg-[#357abd] shadow-blue-200 shadow-md text-white cursor-pointer">
+                        <i data-lucide="mic" class="h-6 w-6"></i>
+                    </button>
+
+                    <form onsubmit="handleManualSubmit(event)" class="flex-1 flex gap-2">
+                        <input type="text" id="user-input"
+                            placeholder="Try: 'Play Tum Hi Ho' or 'मेरी दवाईयाँ बताओ'"
+                            class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                        <button type="submit"
+                            class="p-3 bg-slate-100 text-slate-400 hover:text-[#4A90E2] hover:bg-[#ebf8ff] rounded-xl transition-colors cursor-pointer">
+                            <i data-lucide="send" class="h-5 w-5"></i>
+                        </button>
+                    </form>
+                    <button onclick="clearChat()" title="Clear Chat & Refresh Data"
+                        class="p-3 bg-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors cursor-pointer">
+                        <i data-lucide="trash-2" class="h-5 w-5"></i>
+                    </button>
+                </div>
+                <p class="text-center text-xs text-slate-400 mt-2">
+                    🎤 Speak in English or Hindi — I understand both! | 🎵 Ask me to play any song!
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Video Call Modal Overlay -->
+    <div id="call-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4">
+        <div class="relative mb-8">
+            <div class="w-32 h-32 rounded-full bg-slate-700 flex items-center justify-center relative z-10 border-4 border-white calling-animation">
+                <i data-lucide="user" class="h-16 w-16 text-white"></i>
+            </div>
+            <div class="absolute inset-0 rounded-full bg-blue-400/20 animate-ping"></div>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2">Calling Caretaker...</h2>
+        <p class="text-slate-300 mb-12 animate-pulse">Connecting secure video line</p>
+        <div class="flex gap-6">
+            <button class="w-14 h-14 rounded-full bg-slate-700 text-white flex items-center justify-center hover:bg-slate-600 transition-colors">
+                <i data-lucide="mic-off" class="h-6 w-6"></i>
+            </button>
+            <button onclick="endVideoCall()"
+                class="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30 transform hover:scale-105">
+                <i data-lucide="phone-off" class="h-8 w-8"></i>
+            </button>
+            <button class="w-14 h-14 rounded-full bg-slate-700 text-white flex items-center justify-center hover:bg-slate-600 transition-colors">
+                <i data-lucide="video-off" class="h-6 w-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ========== CONSTANTS & STATE ==========
+        const sessionId = "session_" + Math.random().toString(36).substr(2, 9);
+        const moodEmojis = { "happy": "😊", "sad": "😢", "anxious": "😟", "angry": "😠", "neutral": "😐", "distressed": "😫" };
+
+        let state = {
+            isListening: false,
+            emergencyMode: false,
+            messages: [],
+            vitals: {
+                heartRate: 72, bloodPressure: '120/80', temperature: 98.6, oxygen: 98,
+                sleepScore: 85, weight: 70, height: 175, bmi: 22.9,
+                lastUpdated: new Date().toLocaleTimeString()
+            },
+            reminders: [],
+            musicIndex: 0,
+            musicPlaying: false,
+            youtubeMode: false,    // true when playing YouTube iframe
+            recipientInfo: null,
+            healthSummary: ""
+        };
+
+        // ========== LANGUAGE DETECTION ==========
+        // Smart bilingual detection — checks for Devanagari script (Hindi)
+        // Works for both typed Hindi and voice-transcribed Hindi
+        function isHindi(text) {
+            // Check for Devanagari Unicode characters
+            const hindiChars = (text.match(/[\u0900-\u097F]/g) || []).length;
+            const totalChars = text.replace(/\s/g, '').length;
+            // If more than 30% of characters are Devanagari, treat as Hindi
+            return hindiChars > 0 && (hindiChars / totalChars) > 0.3;
+        }
+
+        // Detect language for the backend (returns 'hi' or 'en')
+        function detectLanguage(text) {
+            return isHindi(text) ? 'hi' : 'en';
+        }
+
+        // ========== MUSIC SYSTEM (Local + YouTube Full-Length) ==========
+        const localPlaylist = [
+            { title: 'Pal Pal Dil Ke Paas', genre: 'Favourite ❤️', url: 'music/pal_pal_dil_ke_paas.mp3', favorite: true },
+            { title: 'Relaxing Piano', genre: 'Calming', url: 'music/relaxing-piano.mp3' },
+            { title: 'Gentle Breeze', genre: 'Nature', url: 'music/gentle-breeze.mp3' },
+            { title: 'Soft Morning', genre: 'Ambient', url: 'music/soft-morning.mp3' },
+            { title: 'Roop Tera Mastana', genre: 'Classic', url: 'music/roop_tera_mastana.mp3' },
+            { title: 'Zindagi Ka Safar', genre: 'Classic', url: 'music/zindagi_ka_safar.mp3' }
+        ];
+        let playlist = [...localPlaylist];
+
+        const audioPlayer = new Audio();
+        audioPlayer.addEventListener('ended', () => {
+            state.musicIndex = (state.musicIndex + 1) % playlist.length;
+            playSong();
+        });
+        audioPlayer.addEventListener('error', () => {
+            console.log('Audio error or blocked');
+        });
+
+        // Search YouTube for full-length songs via backend
+        async function searchYouTube(query) {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/music/youtube?q=${encodeURIComponent(query)}`);
+                if (!res.ok) return null;
+                const data = await res.json();
+                if (data.tracks && data.tracks.length > 0) {
+                    return data.tracks;
+                }
+            } catch (e) {
+                console.log('YouTube search failed:', e);
+            }
+            return null;
+        }
+
+        // Play a song from YouTube (full length via embedded iframe)
+        async function playYouTubeSong(query) {
+            const hindi = isHindi(query);
+            addUIMessage('bot', hindi ? "🔍 गाना खोज रहे हैं..." : "🔍 Searching for your song...");
+
+            const tracks = await searchYouTube(query);
+
+            if (tracks && tracks.length > 0) {
+                const track = tracks[0];
+                state.youtubeMode = true;
+                state.musicPlaying = true;
+
+                // Stop any local audio
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+
+                // Show YouTube player
+                document.getElementById('music-widget').classList.remove('hidden');
+                document.getElementById('yt-container').classList.remove('hidden');
+                document.getElementById('local-music-info').classList.add('hidden');
+                document.getElementById('yt-player').src = track.url;
+                document.getElementById('play-pause-btn').textContent = '⏹ Stop';
+
+                const msg = hindi
+                    ? `🎵 बजा रहा हूँ: ${track.name}`
+                    : `🎵 Now playing: ${track.name}`;
+                addUIMessage('bot', msg);
+                speak(hindi ? `बजा रहा हूँ ${track.name}` : `Playing ${track.name}`);
+                return true;
+            }
+
+            // Fallback to local playlist
+            const fallbackMsg = hindi
+                ? "यह गाना इंटरनेट पर नहीं मिला। स्थानीय लाइब्रेरी से बजा रहा हूँ। 🎵"
+                : "Couldn't find that song online. Playing from local library instead. 🎵";
+            addUIMessage('bot', fallbackMsg);
+            playlist = [...localPlaylist];
+            state.youtubeMode = false;
+            playSong(1);
+            return false;
+        }
+
+        // Play local MP3 song (full length)
+        function playSong(index) {
+            if (index !== undefined) state.musicIndex = index;
+            const song = playlist[state.musicIndex];
+
+            // Stop YouTube if active
+            document.getElementById('yt-player').src = "";
+            document.getElementById('yt-container').classList.add('hidden');
+            document.getElementById('local-music-info').classList.remove('hidden');
+            state.youtubeMode = false;
+
+            audioPlayer.src = song.url;
+            audioPlayer.play().catch(e => console.log('Audio blocked:', e));
+            state.musicPlaying = true;
+
+            document.getElementById('music-widget').classList.remove('hidden');
+            document.getElementById('song-title').textContent = song.title;
+            document.getElementById('song-genre').textContent = song.genre;
+            document.getElementById('play-pause-btn').textContent = '⏸ Pause';
+            lucide.createIcons();
+        }
+
+        function controlMusic(action) {
+            if (action === 'toggle') {
+                if (state.youtubeMode) return; // Can't pause YouTube iframe without API
+                if (audioPlayer.paused) {
+                    audioPlayer.play();
+                    document.getElementById('play-pause-btn').textContent = '⏸ Pause';
+                } else {
+                    audioPlayer.pause();
+                    document.getElementById('play-pause-btn').textContent = '▶ Play';
+                }
+            } else if (action === 'next' && !state.youtubeMode) {
+                state.musicIndex = (state.musicIndex + 1) % playlist.length;
+                playSong();
+            } else if (action === 'prev' && !state.youtubeMode) {
+                state.musicIndex = (state.musicIndex - 1 + playlist.length) % playlist.length;
+                playSong();
+            } else if (action === 'stop') {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                state.musicPlaying = false;
+                document.getElementById('yt-player').src = "";
+                document.getElementById('music-widget').classList.add('hidden');
+                playlist = [...localPlaylist];
+                state.youtubeMode = false;
+            }
+        }
+
+        // ========== SPEECH SYNTHESIS & RECOGNITION ==========
+        const synth = window.speechSynthesis;
+        let recognition = null;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SR();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            // hi-IN recognizes both Hindi and English from bilingual speakers
+            recognition.lang = 'hi-IN';
+
+            recognition.onresult = (e) => {
+                handleUserMessage(e.results[0][0].transcript);
+                setListening(false);
+            };
+            recognition.onerror = () => setListening(false);
+            recognition.onend = () => setListening(false);
+        }
+
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
+            // Strip emoji from speech
+            const cleanText = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+            const u = new SpeechSynthesisUtterance(cleanText);
+            u.rate = 1.0;
+            u.pitch = 1.0;
+
+            const voices = synth.getVoices();
+
+            // Smart voice selection based on response language
+            if (isHindi(text)) {
+                u.lang = 'hi-IN';
+                const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
+                if (hindiVoice) u.voice = hindiVoice;
+            } else {
+                u.lang = 'en-US';
+                const pref = voices.find(v =>
+                    v.name.includes('Google US English') ||
+                    v.name.includes('Samantha') ||
+                    v.name.includes('Zira')
+                );
+                if (pref) u.voice = pref;
+            }
+            synth.speak(u);
+        }
+
+        // ========== DATA FETCHING ==========
+        async function loadBackendData() {
+            const token = localStorage.getItem('token');
+            const rid = localStorage.getItem('selectedRecipientId') || "1";
+            if (!token || !rid) return;
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/profile', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                const recipient = data.care_recipients.find(r => String(r.id) === String(rid));
+                if (recipient) {
+                    state.recipientInfo = recipient;
+                    state.healthSummary = recipient.report_summary || "";
+                    if (recipient.vitals) {
+                        state.vitals = {
+                            heartRate: recipient.vitals.heart_rate || 72,
+                            bloodPressure: `${recipient.vitals.systolic_bp || 120}/${recipient.vitals.diastolic_bp || 80}`,
+                            temperature: recipient.vitals.temperature || 98.6,
+                            oxygen: recipient.vitals.oxygen_saturation || 98,
+                            sleepScore: recipient.vitals.sleep_score || 85,
+                            weight: recipient.vitals.weight || 70,
+                            height: recipient.vitals.height || 175,
+                            bmi: recipient.vitals.bmi || 22.9,
+                            lastUpdated: recipient.vitals.recorded_at ? new Date(recipient.vitals.recorded_at).toLocaleTimeString() : new Date().toLocaleTimeString()
+                        };
+                    }
+                }
+            } catch (e) { console.error('Data sync error:', e); }
+        }
+
+        async function fetchReminders() {
+            const token = localStorage.getItem('token');
+            const rid = localStorage.getItem('selectedRecipientId');
+            if (!token || !rid) return;
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/voice-bot/reminders/${rid}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    state.reminders = data.result.reminders;
+                    renderReminders();
+                }
+            } catch (e) { }
+        }
+
+        async function initDefaultReminders() {
+            const token = localStorage.getItem('token');
+            const rid = localStorage.getItem('selectedRecipientId');
+            await fetch(`http://127.0.0.1:8000/api/voice-bot/init-reminders/${rid}`, {
+                method: 'POST', headers: { 'Authorization': 'Bearer ' + token }
+            });
+            fetchReminders();
+        }
+
+        async function addReminder(e) {
+            e.preventDefault();
+            const text = document.getElementById('rem-text').value;
+            const time = document.getElementById('rem-time').value;
+            const token = localStorage.getItem('token');
+            const rid = localStorage.getItem('selectedRecipientId');
+
+            await fetch(`http://127.0.0.1:8000/api/voice-bot/reminders`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipient_id: parseInt(rid), reminder_type: 'custom',
+                    reminder_text: text, scheduled_time: time, recurrence: 'daily'
+                })
+            });
+            e.target.reset();
+            fetchReminders();
+        }
+
+        async function deleteReminder(id) {
+            const token = localStorage.getItem('token');
+            await fetch(`http://127.0.0.1:8000/api/voice-bot/reminders/${id}`, {
+                method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+            });
+            fetchReminders();
+        }
+
+        async function pollTriggers() {
+            const token = localStorage.getItem('token');
+            const rid = localStorage.getItem('selectedRecipientId');
+            if (!token || !rid) return;
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/voice-bot/triggers/${rid}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.code === 200 && data.result.triggers && data.result.triggers.length > 0) {
+                    data.result.triggers.forEach(trigger => {
+                        addUIMessage('bot', trigger.text);
+                        speak(trigger.text);
+                    });
+                }
+            } catch (e) { }
+        }
+
+        // ========== MAIN CHAT HANDLER ==========
+        async function handleUserMessage(text, triggerType = "user_initiated") {
+            if (!text.trim()) return;
+
+            const hindi = isHindi(text);
+
+            // Add user message to UI immediately
+            if (triggerType === "user_initiated") {
+                addUIMessage('user', text);
+            }
+
+            // ---- LOCAL MUSIC COMMANDS (fast, no API call needed) ----
+            const t = text.toLowerCase();
+            const tHindi = text; // Keep original for Hindi matching
+
+            // Hindi & English stop words for music
+            const stopWords = ['बंद', 'रोको', 'stop', 'बंद करो', 'रुको'];
+            const musicWords = ['गाना', 'संगीत', 'music', 'song', 'गीत'];
+            const playWords = ['बजाओ', 'सुनाओ', 'लगाओ', 'play', 'चलाओ', 'बजा दो', 'सुना दो', 'प्ले'];
+            const favWords = ['पसंदीदा', 'favourite', 'favorite', 'my fav', 'मनपसंद'];
+
+            // Stop music command
+            if (stopWords.some(w => t.includes(w) || tHindi.includes(w))) {
+                if (state.musicPlaying || musicWords.some(w => t.includes(w) || tHindi.includes(w))) {
+                    controlMusic('stop');
+                    const msg = hindi ? 'संगीत बंद कर दिया। 🎵' : 'Music stopped. 🎵';
+                    addUIMessage('bot', msg); speak(msg);
+                    return;
+                }
+            }
+
+            const excludeWords = ['story', 'kahani', 'joke', 'chutkula', 'news', 'samachar'];
+
+            // Play music command
+            if (playWords.some(w => t.includes(w) || tHindi.includes(w)) && !excludeWords.some(w => t.includes(w) || tHindi.includes(w))) {
+                // Check favourites first
+                if (favWords.some(w => t.includes(w) || tHindi.includes(w))) {
+                    playlist = [...localPlaylist]; state.youtubeMode = false;
+                    playSong(0);
+                    const msg = hindi ? 'आपका पसंदीदा गाना बजा रहा हूँ। ❤️' : 'Playing your favourite song. Enjoy! ❤️';
+                    addUIMessage('bot', msg); speak(msg);
+                    return;
+                }
+
+                // Check local playlist by name
+                for (let i = 0; i < localPlaylist.length; i++) {
+                    if (t.includes(localPlaylist[i].title.toLowerCase())) {
+                        playlist = [...localPlaylist]; state.youtubeMode = false;
+                        playSong(i);
+                        const msg = hindi
+                            ? `बजा रहा हूँ: ${localPlaylist[i].title} 🎵`
+                            : `Playing ${localPlaylist[i].title}. 🎵`;
+                        addUIMessage('bot', msg);
+                        speak(hindi ? `बजा रहा हूँ ${localPlaylist[i].title}` : `Playing ${localPlaylist[i].title}`);
+                        return;
+                    }
+                }
+
+                // Generic "play a song / music / कोई गाना" → calming local
+                const genericPlay = ['कोई गाना', 'गाना बजाओ', 'संगीत बजाओ', 'a song', 'some music', 'कुछ सुनाओ'];
+                if (genericPlay.some(w => t.includes(w) || tHindi.includes(w))) {
+                    playlist = [...localPlaylist]; state.youtubeMode = false;
+                    playSong(1);
+                    const msg = hindi ? 'शांत संगीत बजा रहा हूँ। 🎵' : 'Playing some calming music. 🎵';
+                    addUIMessage('bot', msg); speak(msg);
+                    return;
+                }
+
+                // Specific song request → search YouTube for full-length!
+                let songQuery = text;
+                [...playWords, ...musicWords, 'the', 'a', 'an', 'please', 'कृपया'].forEach(w => {
+                    songQuery = songQuery.replace(new RegExp(w, 'gi'), '').trim();
+                });
+                if (songQuery.length > 1) {
+                    playYouTubeSong(songQuery);
+                    return;
+                }
+            }
+
+            // ---- EMERGENCY COMMANDS (fast local handling) ----
+            const emergencyWords = ['emergency', '911', 'आपातकाल', 'मदद', 'help me', 'bachao', 'बचाओ'];
+            if (emergencyWords.some(w => t.includes(w) || tHindi.includes(w))) {
+                toggleEmergencyMode(true);
+                const msg = hindi
+                    ? "🚨 आपातकालीन अलर्ट! देखभालकर्ता को तुरंत सूचित कर रहे हैं।"
+                    : "🚨 EMERGENCY ALERT TRIGGERED. Notifying caretaker immediately.";
+                addUIMessage('bot', msg);
+                speak(msg);
+                return;
+            }
+
+            // ---- BACKEND AI CHAT (Gemini with full health context) ----
+            try {
+                const token = localStorage.getItem('token');
+                const rid = localStorage.getItem('selectedRecipientId') || "1";
+                const lang = detectLanguage(text);
+
+                const res = await fetch('http://127.0.0.1:8000/api/voice-bot/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        recipient_id: parseInt(rid),
+                        session_id: sessionId,
+                        trigger_type: triggerType,
+                        language: lang
+                    })
+                });
+                const data = await res.json();
+
+                if (data.code === 200 && data.result.reply) {
+                    const mood = data.result.mood_detected;
+
+                    // Update mood on last user message
+                    if (triggerType === "user_initiated" && state.messages.length > 0) {
+                        state.messages[state.messages.length - 1].mood = mood;
+                    }
+
+                    addUIMessage('bot', data.result.reply);
+                    speak(data.result.reply);
+
+                    // Depression alert
+                    if (data.result.depression_risk) {
+                        document.getElementById('depression-alert').classList.remove('hidden');
+                    } else {
+                        document.getElementById('depression-alert').classList.add('hidden');
+                    }
+                } else {
+                    throw new Error("API Error");
+                }
+            } catch (e) {
+                const fallback = hindi
+                    ? "अभी मुझे जवाब देने में थोड़ी दिक्कत हो रही है। क्या आप कुछ संगीत सुनना चाहेंगे? 😊"
+                    : "I'm having a little trouble thinking of the right answer right now. Would you like to hear some music instead? 😊";
+                addUIMessage('bot', fallback);
+                speak(fallback);
+            }
+        }
+
+        // ========== UI HELPERS ==========
+        function handleManualSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('user-input');
+            handleUserMessage(input.value);
+            input.value = '';
+        }
+
+        function addUIMessage(sender, text, mood = null) {
+            state.messages.push({ id: Date.now(), sender, text, mood });
+            if (state.messages.length > 100) state.messages = state.messages.slice(-80);
+            renderMessages();
+        }
+
+        function clearChat() {
+            state.messages = [];
+            document.getElementById('depression-alert').classList.add('hidden');
+            renderMessages();
+            handleUserMessage("Hello again!", "proactive_checkin");
+        }
+
+        function renderMessages() {
+            const c = document.getElementById('chat-container');
+            c.innerHTML = state.messages.map(m => {
+                const moodBadge = m.mood && moodEmojis[m.mood]
+                    ? `<span class="text-lg ml-2" title="Detected Mood: ${m.mood}">${moodEmojis[m.mood]}</span>` : '';
+                return `
+                <div class="flex w-full ${m.sender === 'user' ? 'justify-end' : 'justify-start'}">
+                    <div class="flex max-w-[80%] ${m.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start gap-2">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${m.sender === 'user' ? 'bg-indigo-500' : 'bg-[#4A90E2]'} text-white shadow-sm">
+                            <i data-lucide="${m.sender === 'user' ? 'user' : 'heart-handshake'}" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex items-center p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${m.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'}">
+                            <span>${m.text}</span>
+                            ${m.sender === 'user' ? moodBadge : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function renderReminders() {
+            const list = document.getElementById('reminders-list');
+            if (state.reminders.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-400 italic">No active reminders.</p>';
+            } else {
+                list.innerHTML = state.reminders.map(r => `
+                <div class="flex justify-between items-center bg-yellow-50 p-2 rounded-lg border border-yellow-100 mb-1">
+                    <div class="text-xs text-yellow-800">
+                        <span class="font-bold block">${r.text}</span>
+                        <span class="opacity-75">${r.time} (${r.recurrence})</span>
+                    </div>
+                    <button onclick="deleteReminder(${r.id})" class="text-yellow-600 hover:text-red-500 p-1 cursor-pointer">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>`).join('');
+                lucide.createIcons();
+            }
+        }
+
+        // ========== CALL & EMERGENCY ==========
+        function startVideoCall() { document.getElementById('call-modal').classList.remove('hidden'); lucide.createIcons(); }
+        function endVideoCall() {
+            document.getElementById('call-modal').classList.add('hidden');
+            addUIMessage('bot', 'Call ended. Hope that was a nice chat! 😊');
+        }
+
+        function triggerEmergency() { handleUserMessage("Emergency help me!", "user_initiated"); }
+
+        function toggleEmergencyMode(active) {
+            state.emergencyMode = active;
+            localStorage.setItem('healthBotEmergency', active);
+            const header = document.getElementById('header');
+            const badge = document.getElementById('emergency-badge');
+            if (active) {
+                header.classList.remove('bg-[#4A90E2]');
+                header.classList.add('bg-red-600');
+                badge.classList.remove('hidden');
+            } else {
+                header.classList.add('bg-[#4A90E2]');
+                header.classList.remove('bg-red-600');
+                badge.classList.add('hidden');
+            }
+        }
+
+        // ========== LISTENING ==========
+        function setListening(status) {
+            state.isListening = status;
+            const indicator = document.getElementById('listening-indicator');
+            const btn = document.getElementById('mic-btn');
+            if (status) {
+                indicator.classList.remove('hidden');
+                btn.classList.remove('bg-[#4A90E2]', 'hover:bg-[#357abd]', 'shadow-blue-200');
+                btn.classList.add('bg-red-500', 'hover:bg-red-600', 'shadow-red-200', 'scale-110');
+                btn.innerHTML = '<i data-lucide="mic-off" class="h-6 w-6"></i>';
+            } else {
+                indicator.classList.add('hidden');
+                btn.classList.add('bg-[#4A90E2]', 'hover:bg-[#357abd]', 'shadow-blue-200');
+                btn.classList.remove('bg-red-500', 'hover:bg-red-600', 'shadow-red-200', 'scale-110');
+                btn.innerHTML = '<i data-lucide="mic" class="h-6 w-6"></i>';
+            }
+            lucide.createIcons();
+        }
+
+        function toggleListening() {
+            if (!recognition) { alert("Speech recognition not supported in this browser."); return; }
+            // Interrupt bot speech when user wants to talk
+            if (synth.speaking) synth.cancel();
+
+            if (state.isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                setListening(true);
+            }
+        }
+
+        // ========== INITIALIZATION ==========
+        function init() {
+            lucide.createIcons();
+            loadBackendData();
+            fetchReminders();
+
+            if (localStorage.getItem('healthBotEmergency') === 'true') toggleEmergencyMode(true);
+
+            // Proactive greeting — backend decides language based on context
+            setTimeout(() => {
+                handleUserMessage(
+                    "Provide a gentle morning/evening contextual greeting directly based on my name and latest health info. If appropriate, greet in Hindi.",
+                    "proactive_checkin"
+                );
+            }, 1000);
+
+            // Poll for scheduled reminders/triggers every 60 seconds
+            setInterval(() => { pollTriggers(); }, 60000);
+
+            // Preload voices for TTS
+            synth.getVoices();
+            speechSynthesis.onvoiceschanged = () => synth.getVoices();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>

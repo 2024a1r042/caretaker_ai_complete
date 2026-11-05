@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="js/auth-guard.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Monitoring </title>
+    <link href="vendor/bootstrap-5.3.0.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="audio_styles.css">
+    <style>
+        body {
+            background-color: #FDFBF7;
+            background-image:
+                radial-gradient(at 20% 30%, #B2F7EF 0px, transparent 55%),
+                radial-gradient(at 80% 10%, #FFDAC1 0px, transparent 50%),
+                radial-gradient(at 40% 80%, #E2D1F9 0px, transparent 50%),
+                radial-gradient(at 90% 90%, #B2F7EF 0px, transparent 40%);
+            background-attachment: fixed;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header-card {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        /* Buttons matching the audio theme */
+        .btn-custom {
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, var(--green), #2dd4bf);
+            color: white;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 211, 153, 0.3);
+            color: white;
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, var(--red), #f472b6);
+            color: white;
+        }
+
+        .btn-stop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 113, 133, 0.3);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, var(--amber), #fbbf24);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(246, 194, 62, 0.3);
+            color: white;
+        }
+
+        /* Stats Card Overrides to fit Bootstrap Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card-bs {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(24px);
+            transition: all 0.3s;
+        }
+
+        .stat-card-bs:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card-bs.cough {
+            border-left: 4px solid var(--red);
+        }
+
+        .stat-card-bs.sneeze {
+            border-left: 4px solid var(--amber);
+        }
+
+        .stat-card-bs.total {
+            border-left: 4px solid var(--accent);
+        }
+
+        .stat-val-bs {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1;
+        }
+
+        .stat-label-bs {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="mb-2">
+                        <a href="profile.html" class="text-decoration-none text-muted">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Profile
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+
+                        <span class="status-badge">
+                            <span class="status-dot-large" id="status-dot"></span>
+                            <span id="status-text">OFFLINE</span>
+                        </span>
+                    </div>
+                    <p class="text-muted mb-0 mt-1">Real-Time Audio Classification & Cough/Sneeze Detection</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-custom btn-start" id="btn-start">
+                        <i class="fas fa-play"></i> Start
+                    </button>
+                    <button class="btn btn-custom btn-stop" id="btn-stop" disabled>
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                    <button class="btn btn-custom btn-reset" id="btn-reset">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                    <button class="btn btn-outline-danger ms-2" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Visualizations & Stats -->
+            <div class="col-lg-8">
+
+                <!-- Waveform -->
+                <div class="glass-card">
+                    <div class="glass-header">
+                        <span class="glass-title">Live Audio Signal</span>
+                    </div>
+                    <div class="canvas-wrap">
+                        <span class="vis-label">Waveform</span>
+                        <canvas id="waveform-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Spectrogram -->
+                <div class="glass-card">
+                    <div class="glass-header">
+                        <span class="glass-title">Frequency Spectrogram</span>
+                    </div>
+                    <div class="canvas-wrap">
+                        <span class="vis-label">Spectrogram</span>
+                        <canvas id="spectrogram-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="stats-grid">
+                    <div class="stat-card-bs cough">
+                        <div class="stat-val-bs" id="stat-cough" style="color: var(--red);">0</div>
+                        <div class="stat-label-bs">Coughs</div>
+                    </div>
+                    <div class="stat-card-bs sneeze">
+                        <div class="stat-val-bs" id="stat-sneeze" style="color: var(--amber);">0</div>
+                        <div class="stat-label-bs">Sneezes</div>
+                    </div>
+                    <div class="stat-card-bs total">
+                        <div class="stat-val-bs" id="stat-total" style="color: var(--accent);">0</div>
+                        <div class="stat-label-bs">Total Alerts</div>
+                    </div>
+                </div>
+
+                <!-- Classification Result -->
+                <div class="glass-card">
+                    <div class="glass-header">
+                        <span class="glass-title">Real-Time Classification</span>
+                    </div>
+                    <div class="prediction-card">
+                        <div class="pred-icon" id="predicted-icon">🎙️</div>
+                        <div class="pred-info">
+                            <div class="pred-label" id="predicted-label">Waiting…</div>
+                            <div class="pred-conf" id="predicted-conf">—</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Confidence & Logs -->
+            <div class="col-lg-4">
+
+                <!-- Confidence Bars -->
+                <div class="glass-card">
+                    <div class="glass-header">
+                        <span class="glass-title">Class Confidence</span>
+                    </div>
+                    <div class="bars-grid">
+                        <div class="bar-item">
+                            <label><span>🫁 Cough</span><span id="val-cough">0%</span></label>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-cough" id="bar-cough"></div>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <label><span>🤧 Sneeze</span><span id="val-sneeze">0%</span></label>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-sneeze" id="bar-sneeze"></div>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <label><span>🗣️ Talking</span><span id="val-talking">0%</span></label>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-talking" id="bar-talking"></div>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <label><span>🔇 Noise</span><span id="val-noise">0%</span></label>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-noise" id="bar-noise"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Logs -->
+                <div class="glass-card" style="height: 500px; display: flex; flex-direction: column;">
+                    <div class="glass-header">
+                        <span class="glass-title">🔔 Alert Logs</span>
+                        <button class="btn btn-sm btn-outline-secondary" id="btn-clear-logs"
+                            style="font-size: 0.75rem;">Clear</button>
+                    </div>
+                    <div class="alert-list-container" id="alert-list" style="flex: 1;">
+                        <div class="text-center p-5 text-muted" id="empty-alerts">
+                            <i class="fas fa-shield-alt fa-3x mb-3 opacity-25"></i>
+                            <p>No alerts yet.<br>Start monitoring to detect events.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="vendor/bootstrap-5.3.0.bundle.min.js"></script>
+    <script src="vendor/socket.io-4.7.5.min.js"></script>
+    <script src="js/audio_monitoring.js"></script>
+</body>
+
+</html>

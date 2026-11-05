@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="js/auth-guard.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Caretaker.AI</title>
+    <link href="vendor/bootstrap-5.3.0.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <script src="vendor/chart-4.4.1.umd.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --admin-bg: #f1f5f9;
+            --admin-surface: #ffffff;
+            --admin-card: #ffffff;
+            --admin-border: #e2e8f0;
+            --admin-primary: #4f46e5;
+            --admin-primary-glow: rgba(79,70,229,0.15);
+            --admin-primary-light: #ede9fe;
+            --admin-success: #059669;
+            --admin-danger: #dc2626;
+            --admin-warning: #d97706;
+            --admin-text: #0f172a;
+            --admin-muted: #64748b;
+            --admin-sidebar-bg: #1e1b4b;
+            --admin-sidebar-text: #c7d2fe;
+            --admin-sidebar-muted: #818cf8;
+            --admin-sidebar-active-bg: rgba(255,255,255,0.12);
+            --admin-sidebar-active-text: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            min-height: 100vh;
+        }
+
+        /* ── Login Screen ── */
+        #loginScreen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(ellipse at top left, rgba(79,70,229,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at bottom right, rgba(16,185,129,0.06) 0%, transparent 55%),
+                #f1f5f9;
+        }
+
+        .login-card {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(15,23,42,0.1), 0 4px 16px rgba(15,23,42,0.06);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo .icon-ring {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--admin-primary), #7c3aed);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 24px rgba(79,70,229,0.3);
+        }
+
+        .login-logo h2 { font-size: 1.5rem; font-weight: 700; color: var(--admin-text); }
+        .login-logo p  { font-size: 0.85rem; color: var(--admin-muted); margin-top: 0.25rem; }
+
+        .admin-input {
+            background: #f8fafc;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 10px;
+            color: var(--admin-text);
+            padding: 0.75rem 1rem;
+            width: 100%;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .admin-input:focus {
+            border-color: var(--admin-primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px var(--admin-primary-glow);
+        }
+
+        .admin-input::placeholder { color: #94a3b8; }
+
+        .btn-admin-primary {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, #7c3aed 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            padding: 0.8rem 2rem;
+            width: 100%;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-admin-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79,70,229,0.35);
+        }
+
+        /* ── Dashboard Layout ── */
+        #dashboard { display: none; }
+
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 240px;
+            height: 100vh;
+            background: var(--admin-sidebar-bg);
+            border-right: none;
+            padding: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(15,23,42,0.12);
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-brand .brand-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #818cf8, #a78bfa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand .brand-text { font-weight: 700; font-size: 0.95rem; color: #ffffff; }
+        .sidebar-brand .brand-badge {
+            font-size: 0.65rem;
+            background: rgba(255,255,255,0.15);
+            color: #c7d2fe;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .sidebar-nav { padding: 1rem 0; flex: 1; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1.25rem;
+            color: var(--admin-sidebar-text);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: #ffffff;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+            background: var(--admin-sidebar-active-bg);
+            border-left-color: #818cf8;
+        }
+
+        .nav-item .nav-icon { width: 18px; text-align: center; }
+
+        .sidebar-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .admin-user-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .admin-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #818cf8, #a78bfa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: 700;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .topbar h1 { font-size: 1.5rem; font-weight: 700; color: var(--admin-text); }
+        .topbar .subtitle { font-size: 0.85rem; color: var(--admin-muted); margin-top: 0.1rem; }
+
+        /* ── Stat Cards ── */
+        .stat-card {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.06);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(79,70,229,0.12);
+        }
+
+        .stat-icon {
+            width: 52px; height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.purple { background: #ede9fe; color: #4f46e5; }
+        .stat-icon.green  { background: #d1fae5; color: #059669; }
+        .stat-icon.yellow { background: #fef3c7; color: #d97706; }
+        .stat-icon.red    { background: #fee2e2; color: #dc2626; }
+        .stat-icon.blue   { background: #dbeafe; color: #2563eb; }
+
+        .stat-label { font-size: 0.75rem; color: var(--admin-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-top: 0.25rem; color: var(--admin-text); }
+
+        /* ── Panel Card ── */
+        .panel-card {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.06);
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+        }
+
+        .panel-header h5 { font-weight: 600; font-size: 1rem; margin: 0; color: var(--admin-text); }
+        .panel-body { padding: 1.5rem; }
+
+        /* ── Tables ── */
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th {
+            padding: 0.85rem 1rem;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--admin-muted);
+            border-bottom: 2px solid var(--admin-border);
+            background: #f8fafc;
+        }
+
+        .admin-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.875rem;
+            vertical-align: middle;
+            color: var(--admin-text);
+        }
+
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tr:hover td { background: #f8fafc; }
+
+        /* ── Badges ── */
+        .badge-verified {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .badge-rejected {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border: 1px solid #fca5a5;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        /* ── Action Buttons ── */
+        .btn-verify {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-verify:hover { background: #059669; color: white; border-color: #059669; }
+
+        .btn-reject {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-reject:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+        .btn-practo {
+            background: #ede9fe;
+            color: #4f46e5;
+            border: 1px solid #c4b5fd;
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-practo:hover { background: #4f46e5; color: white; }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-delete:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+        /* ── Search ── */
+        .search-group {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 10px;
+            padding: 0.45rem 0.9rem;
+            gap: 0.5rem;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.06);
+        }
+
+        .search-group input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--admin-text);
+            font-size: 0.875rem;
+            width: 220px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-group input::placeholder { color: #94a3b8; }
+        .search-group i { color: var(--admin-muted); }
+
+        /* ── Tabs ── */
+        .admin-tabs { display: none; }
+        .admin-tabs.active-tab { display: block; }
+
+        /* ── Toast ── */
+        #toastContainer {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast-msg {
+            background: #ffffff;
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(15,23,42,0.15);
+            animation: slideUp 0.3s ease;
+            min-width: 280px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--admin-text);
+        }
+
+        .toast-msg.success { border-left: 4px solid var(--admin-success); }
+        .toast-msg.error   { border-left: 4px solid var(--admin-danger); }
+        .toast-msg.info    { border-left: 4px solid var(--admin-primary); }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Reject Modal ── */
+        .modal-backdrop-custom {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.45);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-backdrop-custom.show { display: flex; }
+
+        .modal-card {
+            background: #ffffff;
+            border: 1px solid var(--admin-border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 30px 60px rgba(15,23,42,0.2);
+        }
+
+        .modal-card h5 { font-weight: 700; margin-bottom: 1rem; color: var(--admin-text); }
+
+        .admin-textarea {
+            background: #f8fafc;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 10px;
+            color: var(--admin-text);
+            padding: 0.75rem 1rem;
+            width: 100%;
+            resize: vertical;
+            font-size: 0.875rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .admin-textarea:focus { border-color: var(--admin-danger); background: #fff; }
+
+        /* ── Loading ── */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+            height: 20px;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--admin-muted);
+        }
+
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.35; display: block; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ LOGIN SCREEN ═══════════════════════ -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="icon-ring"><i class="fas fa-shield-alt"></i></div>
+            <h2>Admin Panel</h2>
+            <p>Caretaker.AI Platform Management</p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div>
+                <label style="font-size:0.8rem;color:var(--admin-muted);font-weight:500;display:block;margin-bottom:0.4rem;">USERNAME</label>
+                <input type="text" id="loginUsername" class="admin-input" placeholder="admin" autocomplete="off">
+            </div>
+            <div>
+                <label style="font-size:0.8rem;color:var(--admin-muted);font-weight:500;display:block;margin-bottom:0.4rem;">PASSWORD</label>
+                <input type="password" id="loginPassword" class="admin-input" placeholder="••••••••" autocomplete="off">
+            </div>
+            <div id="loginError" style="color:var(--admin-danger);font-size:0.82rem;display:none;"></div>
+            <button class="btn-admin-primary mt-2" onclick="doLogin()">
+                <i class="fas fa-sign-in-alt me-2"></i>Sign In to Admin Panel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
+<div id="dashboard">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="fas fa-heartbeat"></i></div>
+            <div>
+                <div class="brand-text">Caretaker.AI</div>
+                <div class="brand-badge">ADMIN</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-item active" onclick="showTab('overview')" id="nav-overview">
+                <i class="fas fa-chart-pie nav-icon"></i> Overview
+            </div>
+            <div class="nav-item" onclick="showTab('doctors')" id="nav-doctors">
+                <i class="fas fa-user-md nav-icon"></i> Doctor Verification
+                <span id="pendingBadge" style="margin-left:auto;background:var(--admin-warning);color:#000;border-radius:10px;padding:0.1rem 0.5rem;font-size:0.65rem;font-weight:700;display:none;"></span>
+            </div>
+            <div class="nav-item" onclick="showTab('caretakers')" id="nav-caretakers">
+                <i class="fas fa-users nav-icon"></i> Caretakers
+            </div>
+            <div class="nav-item" onclick="showTab('audit')" id="nav-audit">
+                <i class="fas fa-clipboard-list nav-icon"></i> Audit Log
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-user-chip">
+                <div class="admin-avatar" id="sidebarAvatarText">A</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.82rem;font-weight:600;" id="sidebarName">Admin</div>
+                    <div style="font-size:0.72rem;color:var(--admin-muted);">Super Admin</div>
+                </div>
+                <i class="fas fa-sign-out-alt" style="color:var(--admin-muted);cursor:pointer;" onclick="doLogout()" title="Sign Out"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- ── Overview Tab ── -->
+        <div id="tab-overview" class="admin-tabs active-tab">
+            <div class="topbar">
+                <div>
+                    <h1><i class="fas fa-chart-pie me-2" style="color:var(--admin-primary);"></i>Overview</h1>
+                    <div class="subtitle">Platform health at a glance</div>
+                </div>
+                <button class="btn-admin-primary" style="width:auto;padding:0.6rem 1.2rem;" onclick="loadAnalytics()">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                </button>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+                        <div>
+                            <div class="stat-label">Total Caretakers</div>
+                            <div class="stat-value" id="statCaretakers">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-user-md"></i></div>
+                        <div>
+                            <div class="stat-label">Verified Doctors</div>
+                            <div class="stat-value" id="statVerifiedDoctors">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card" onclick="showTab('doctors')" style="cursor:pointer;" title="Click to manage pending verifications">
+                        <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <div class="stat-label">Pending Verification</div>
+                            <div class="stat-value" id="statPending">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div>
+                            <div class="stat-label">Fall Events Detected</div>
+                            <div class="stat-value" id="statFalls">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-heart"></i></div>
+                        <div>
+                            <div class="stat-label">Care Recipients</div>
+                            <div class="stat-value" id="statRecipients">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fas fa-video"></i></div>
+                        <div>
+                            <div class="stat-label">Video Uploads</div>
+                            <div class="stat-value" id="statVideos">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h5><i class="fas fa-bell me-2" style="color:var(--admin-warning);"></i>Pending Doctor Verifications</h5>
+                    <button class="btn-verify" onclick="showTab('doctors')"><i class="fas fa-arrow-right me-1"></i>View All</button>
+                </div>
+                <div class="panel-body">
+                    <div id="overviewPendingList">
+                        <div class="skeleton" style="margin-bottom:0.75rem;"></div>
+                        <div class="skeleton" style="width:70%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Doctor Verification Tab ── -->
+        <div id="tab-doctors" class="admin-tabs">
+            <div class="topbar">
+                <div>
+                    <h1><i class="fas fa-user-md me-2" style="color:var(--admin-primary);"></i>Doctor Verification</h1>
+                    <div class="subtitle">Review and approve doctor registrations</div>
+                </div>
+                <button class="btn-admin-primary" style="width:auto;padding:0.6rem 1.2rem;" onclick="loadDoctors()">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                </button>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h5>All Registered Doctors</h5>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <span style="display:inline-flex;align-items:center;gap:0.4rem;background:#ede9fe;color:#4f46e5;border:1px solid #c4b5fd;border-radius:8px;padding:0.35rem 0.8rem;font-size:0.78rem;font-weight:600;">
+                            <i class="fas fa-info-circle"></i> How to verify:
+                        </span>
+                    </div>
+                </div>
+                <!-- Practo explanation banner -->
+                <div style="background:linear-gradient(135deg,#ede9fe,#dbeafe);border-bottom:1px solid #e2e8f0;padding:0.9rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <div style="background:#4f46e5;color:white;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;">1</div>
+                        <span style="font-size:0.82rem;color:#1e1b4b;font-weight:500;">Click <strong>Verify on Practo</strong> to search the doctor's name on India's official medical directory</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <div style="background:#4f46e5;color:white;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;">2</div>
+                        <span style="font-size:0.82rem;color:#1e1b4b;font-weight:500;">Confirm the doctor's name, specialization, and clinic match the Practo listing</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <div style="background:#059669;color:white;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;">3</div>
+                        <span style="font-size:0.82rem;color:#1e1b4b;font-weight:500;">Click <strong>Verify</strong> to approve or <strong>Reject</strong> with a reason if credentials don't match</span>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="admin-table" id="doctorsTable">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Specialization</th>
+                                <th>Contact</th>
+                                <th>Registered</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctorsTableBody">
+                            <tr><td colspan="6"><div class="skeleton"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Caretakers Tab ── -->
+        <div id="tab-caretakers" class="admin-tabs">
+            <div class="topbar">
+                <div>
+                    <h1><i class="fas fa-users me-2" style="color:var(--admin-primary);"></i>Caretaker Management</h1>
+                    <div class="subtitle">All registered caretakers on the platform</div>
+                </div>
+                <div class="search-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="caretakerSearch" placeholder="Search by name, email..."
+                           oninput="searchCaretakers(this.value)">
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Caretaker</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Recipients</th>
+                                <th>Registered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="caretakersTableBody">
+                            <tr><td colspan="6"><div class="skeleton"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Audit Log Tab ── -->
+        <div id="tab-audit" class="admin-tabs">
+            <div class="topbar">
+                <div>
+                    <h1><i class="fas fa-clipboard-list me-2" style="color:var(--admin-primary);"></i>Audit Log</h1>
+                    <div class="subtitle">Every admin action is recorded here</div>
+                </div>
+                <button class="btn-admin-primary" style="width:auto;padding:0.6rem 1.2rem;" onclick="loadAuditLog()">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                </button>
+            </div>
+
+            <div class="panel-card">
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Admin</th>
+                                <th>Action</th>
+                                <th>Target</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody">
+                            <tr><td colspan="5"><div class="skeleton"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /main-content -->
+</div><!-- /dashboard -->
+
+<!-- Reject Modal -->
+<div class="modal-backdrop-custom" id="rejectModal">
+    <div class="modal-card">
+        <h5><i class="fas fa-times-circle me-2" style="color:var(--admin-danger);"></i>Reject Doctor Registration</h5>
+        <p style="font-size:0.875rem;color:var(--admin-muted);margin-bottom:1rem;">Please provide a reason. This will be logged in the audit trail.</p>
+        <textarea id="rejectReason" class="admin-textarea" rows="3" placeholder="e.g. License number unverifiable on Practo..."></textarea>
+        <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
+            <button class="btn-reject" style="flex:1" onclick="confirmReject()">Confirm Rejection</button>
+            <button onclick="closeRejectModal()" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--admin-border);border-radius:8px;color:var(--admin-muted);font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<script>
+const API = 'http://127.0.0.1:8000/api/admin';
+let adminToken = localStorage.getItem('adminToken');
+let rejectTargetId = null;
+let rejectTargetName = null;
+
+// ── Boot ──────────────────────────────────────────────
+if (adminToken) { showDashboard(); }
+
+// ── Login ──────────────────────────────────────────────
+async function doLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+
+    if (!username || !password) { errEl.textContent = 'Please fill in all fields.'; errEl.style.display = 'block'; return; }
+
+    try {
+        const res = await fetch(`${API}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.detail || 'Login failed.'; errEl.style.display = 'block'; return; }
+
+        adminToken = data.access_token;
+        localStorage.setItem('adminToken', adminToken);
+        document.getElementById('sidebarName').textContent = data.admin.full_name || data.admin.username;
+        document.getElementById('sidebarAvatarText').textContent = (data.admin.full_name || data.admin.username)[0].toUpperCase();
+        showDashboard();
+    } catch(e) {
+        errEl.textContent = 'Connection error. Is the backend running?';
+        errEl.style.display = 'block';
+    }
+}
+
+function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadAnalytics();
+    loadDoctors();
+}
+
+function doLogout() {
+    localStorage.removeItem('adminToken');
+    adminToken = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+}
+
+// ── Tab Navigation ──────────────────────────────────────
+function showTab(name) {
+    document.querySelectorAll('.admin-tabs').forEach(t => t.classList.remove('active-tab'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active-tab');
+    document.getElementById('nav-' + name).classList.add('active');
+
+    if (name === 'caretakers') loadCaretakers();
+    if (name === 'audit') loadAuditLog();
+}
+
+// ── Auth Header ──────────────────────────────────────────
+function authHeaders() {
+    return { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' };
+}
+
+// ── Analytics ──────────────────────────────────────────
+async function loadAnalytics() {
+    try {
+        const res = await fetch(`${API}/analytics`, { headers: authHeaders() });
+        if (res.status === 401 || res.status === 403) { doLogout(); return; }
+        const d = await res.json();
+        document.getElementById('statCaretakers').textContent    = d.total_caretakers ?? '—';
+        document.getElementById('statVerifiedDoctors').textContent = d.verified_doctors ?? '—';
+        document.getElementById('statPending').textContent       = d.pending_doctors ?? '—';
+        document.getElementById('statFalls').textContent         = d.total_fall_events ?? '—';
+        document.getElementById('statRecipients').textContent    = d.total_recipients ?? '—';
+        document.getElementById('statVideos').textContent        = d.total_video_uploads ?? '—';
+
+        const pending = d.pending_doctors || 0;
+        const badge = document.getElementById('pendingBadge');
+        if (pending > 0) { badge.textContent = pending; badge.style.display = 'block'; }
+        else { badge.style.display = 'none'; }
+
+        loadOverviewPending();
+    } catch(e) {
+        toast('Failed to load analytics', 'error');
+    }
+}
+
+async function loadOverviewPending() {
+    const el = document.getElementById('overviewPendingList');
+    try {
+        const res = await fetch(`${API}/doctors/pending`, { headers: authHeaders() });
+        const doctors = await res.json();
+        if (!doctors.length) {
+            el.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle" style="color:var(--admin-success);opacity:1;"></i><p>No pending verifications!</p></div>';
+            return;
+        }
+        el.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Specialization</th><th>Action</th></tr></thead><tbody>` +
+            doctors.slice(0,5).map(d => `
+                <tr>
+                    <td><strong>${d.full_name || 'N/A'}</strong><br><span style="color:var(--admin-muted);font-size:0.78rem;">${d.email}</span></td>
+                    <td>${d.specialization || '—'}</td>
+                    <td>
+                        <button class="btn-verify me-1" onclick="verifyDoctor(${d.id},'${esc(d.full_name)}')"><i class="fas fa-check me-1"></i>Verify</button>
+                        <a class="btn-practo" href="https://www.practo.com/search/doctors?results_type=doctor&q=${encodeURIComponent(d.full_name)}" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Practo
+                        </a>
+                    </td>
+                </tr>
+            `).join('') + `</tbody></table>`;
+    } catch(e) {
+        el.innerHTML = '<p style="color:var(--admin-muted);font-size:0.85rem;">Could not load pending list.</p>';
+    }
+}
+
+// ── Doctors ──────────────────────────────────────────────
+async function loadDoctors() {
+    const tbody = document.getElementById('doctorsTableBody');
+    tbody.innerHTML = '<tr><td colspan="6"><div class="skeleton"></div></td></tr>';
+    try {
+        const res = await fetch(`${API}/doctors`, { headers: authHeaders() });
+        const doctors = await res.json();
+
+        if (!doctors.length) {
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-user-md"></i><p>No doctors registered yet.</p></div></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = doctors.map(d => {
+            const statusBadge = d.rejection_reason
+                ? `<span class="badge-rejected"><i class="fas fa-times me-1"></i>Rejected</span>`
+                : d.is_verified
+                ? `<span class="badge-verified"><i class="fas fa-check me-1"></i>Verified</span>`
+                : `<span class="badge-pending"><i class="fas fa-clock me-1"></i>Pending</span>`;
+
+            const actions = d.is_verified
+                ? `<button class="btn-reject" onclick="openRejectModal(${d.id},'${esc(d.full_name)}')"><i class="fas fa-ban me-1"></i>Revoke</button>`
+                : `<button class="btn-verify me-1" onclick="verifyDoctor(${d.id},'${esc(d.full_name)}')"><i class="fas fa-check me-1"></i>Verify</button>
+                   <button class="btn-reject me-1" onclick="openRejectModal(${d.id},'${esc(d.full_name)}')"><i class="fas fa-times me-1"></i>Reject</button>`;
+
+            return `<tr>
+                <td>
+                    <strong>${d.full_name || 'N/A'}</strong><br>
+                    <span style="color:var(--admin-muted);font-size:0.78rem;">${d.username}</span>
+                </td>
+                <td>${d.specialization || '—'}</td>
+                <td>
+                    <span style="font-size:0.82rem;">${d.email}</span><br>
+                    <span style="color:var(--admin-muted);font-size:0.78rem;">${d.phone_number || '—'}</span>
+                </td>
+                <td style="font-size:0.82rem;color:var(--admin-muted);">${formatDate(d.created_at)}</td>
+                <td>${statusBadge}</td>
+                <td style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+                    ${actions}
+                    <a class="btn-practo" href="https://www.practo.com/search/doctors?results_type=doctor&q=${encodeURIComponent(d.full_name)}&specialization=${encodeURIComponent(d.specialization||'')}" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Practo
+                    </a>
+                </td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--admin-danger);text-align:center;">Failed to load doctors.</td></tr>`;
+    }
+}
+
+async function verifyDoctor(id, name) {
+    try {
+        const res = await fetch(`${API}/doctors/${id}/verify`, { method: 'PATCH', headers: authHeaders() });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.detail);
+        toast(`Dr. ${name} has been verified!`, 'success');
+        loadDoctors(); loadAnalytics();
+    } catch(e) { toast(e.message || 'Verification failed', 'error'); }
+}
+
+function openRejectModal(id, name) {
+    rejectTargetId = id;
+    rejectTargetName = name;
+    document.getElementById('rejectReason').value = '';
+    document.getElementById('rejectModal').classList.add('show');
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').classList.remove('show');
+    rejectTargetId = null;
+}
+
+async function confirmReject() {
+    const reason = document.getElementById('rejectReason').value.trim() || 'No reason provided';
+    try {
+        const res = await fetch(`${API}/doctors/${rejectTargetId}/reject`, {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({ reason })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.detail);
+        toast(`Dr. ${rejectTargetName} has been rejected.`, 'info');
+        closeRejectModal();
+        loadDoctors(); loadAnalytics();
+    } catch(e) { toast(e.message || 'Rejection failed', 'error'); }
+}
+
+// ── Caretakers ──────────────────────────────────────────
+let caretakersCache = [];
+async function loadCaretakers(search = '') {
+    const tbody = document.getElementById('caretakersTableBody');
+    tbody.innerHTML = '<tr><td colspan="6"><div class="skeleton"></div></td></tr>';
+    try {
+        const url = search ? `${API}/caretakers?search=${encodeURIComponent(search)}` : `${API}/caretakers`;
+        const res = await fetch(url, { headers: authHeaders() });
+        const list = await res.json();
+        caretakersCache = list;
+
+        if (!list.length) {
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users"></i><p>No caretakers found.</p></div></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map(c => `<tr>
+            <td><strong>${c.full_name || 'N/A'}</strong><br><span style="color:var(--admin-muted);font-size:0.78rem;">${c.username}</span></td>
+            <td style="font-size:0.82rem;">${c.email}</td>
+            <td style="font-size:0.82rem;">${c.phone_number || '—'}</td>
+            <td><span style="background:rgba(99,102,241,0.15);color:var(--admin-primary);border-radius:6px;padding:0.2rem 0.6rem;font-size:0.8rem;">${c.recipient_count}</span></td>
+            <td style="font-size:0.82rem;color:var(--admin-muted);">${formatDate(c.created_at)}</td>
+            <td>
+                <button class="btn-delete" onclick="deleteCaretaker(${c.id},'${esc(c.full_name)}')">
+                    <i class="fas fa-trash me-1"></i>Remove
+                </button>
+            </td>
+        </tr>`).join('');
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--admin-danger);text-align:center;">Failed to load caretakers.</td></tr>`;
+    }
+}
+
+let searchTimer = null;
+function searchCaretakers(val) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadCaretakers(val), 400);
+}
+
+async function deleteCaretaker(id, name) {
+    if (!confirm(`Are you sure you want to permanently remove caretaker "${name}" and ALL their associated data? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`${API}/caretakers/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.detail);
+        toast(`Caretaker "${name}" removed.`, 'info');
+        loadCaretakers(); loadAnalytics();
+    } catch(e) { toast(e.message || 'Delete failed', 'error'); }
+}
+
+// ── Audit Log ──────────────────────────────────────────
+async function loadAuditLog() {
+    const tbody = document.getElementById('auditTableBody');
+    tbody.innerHTML = '<tr><td colspan="5"><div class="skeleton"></div></td></tr>';
+    try {
+        const res = await fetch(`${API}/audit-log`, { headers: authHeaders() });
+        const logs = await res.json();
+        if (!logs.length) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No actions logged yet.</p></div></td></tr>`;
+            return;
+        }
+        tbody.innerHTML = logs.map(l => {
+            const actionColor = l.action.includes('VERIFY') ? 'var(--admin-success)'
+                              : l.action.includes('REJECT') || l.action.includes('DELETE') ? 'var(--admin-danger)'
+                              : 'var(--admin-warning)';
+            return `<tr>
+                <td style="font-size:0.78rem;color:var(--admin-muted);">${formatDate(l.timestamp)}</td>
+                <td style="font-weight:600;">${l.admin_username}</td>
+                <td><span style="color:${actionColor};font-weight:600;font-size:0.82rem;">${l.action}</span></td>
+                <td style="font-size:0.82rem;">${l.target_type ? `${l.target_type}: ${l.target_name || ''}` : '—'}</td>
+                <td style="font-size:0.82rem;color:var(--admin-muted);">${l.detail || '—'}</td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:var(--admin-danger);text-align:center;">Failed to load audit log.</td></tr>`;
+    }
+}
+
+// ── Utils ──────────────────────────────────────────────
+function formatDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function esc(str) {
+    return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function toast(msg, type = 'info') {
+    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle';
+    const color = type === 'success' ? 'var(--admin-success)' : type === 'error' ? 'var(--admin-danger)' : 'var(--admin-primary)';
+    const el = document.createElement('div');
+    el.className = `toast-msg ${type}`;
+    el.innerHTML = `<i class="fas ${icon}" style="color:${color};font-size:1.1rem;"></i><span>${msg}</span>`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+}
+
+// Enter key for login
+document.getElementById('loginPassword')?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginUsername')?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+
+</body>
+</html>

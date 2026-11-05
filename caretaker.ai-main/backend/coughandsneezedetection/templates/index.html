@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SonicGuard — Real-Time Audio Classifier</title>
+    <meta name="description" content="Real-time cough and sneeze detection using deep learning. Live audio classification with waveform visualisation and instant alerts." />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<div class="app">
+
+    <!-- ═══════════════ HEADER ═══════════════ -->
+    <header class="header">
+        <div class="header-left">
+            <span class="logo">⚡ SonicGuard</span>
+            <div class="status-badge">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">OFFLINE</span>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button class="btn btn-start" id="btn-start">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l7 4.5-7 4.5z"/></svg>
+                Start Monitoring
+            </button>
+            <button class="btn btn-stop" id="btn-stop" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 13H6V9h4v6zm6 0h-4V9h4v6z"/></svg>
+                Stop
+            </button>
+            <button class="btn btn-reset" id="btn-reset">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                Reset
+            </button>
+        </div>
+    </header>
+
+    <!-- ═══════════════ MAIN ═══════════════ -->
+    <main class="main">
+
+        <!-- Waveform Visualiser -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Live Audio Signal</span>
+            </div>
+            <div class="card-body">
+                <div class="canvas-wrap">
+                    <span class="vis-label">Waveform</span>
+                    <canvas id="waveform-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spectrogram Visualiser -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Frequency Spectrogram</span>
+            </div>
+            <div class="card-body">
+                <div class="canvas-wrap">
+                    <span class="vis-label">Spectrogram</span>
+                    <canvas id="spectrogram-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Result -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Classification Result</span>
+            </div>
+            <div class="card-body">
+                <div class="prediction-card">
+                    <div class="pred-icon" id="predicted-icon">🎙️</div>
+                    <div class="pred-info">
+                        <div class="pred-label" id="predicted-label">Waiting…</div>
+                        <div class="pred-conf" id="predicted-conf">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detection Stats -->
+        <div class="stats-row">
+            <div class="stat-card stat-cough">
+                <div class="stat-value" id="stat-cough">0</div>
+                <div class="stat-label">Coughs</div>
+            </div>
+            <div class="stat-card stat-sneeze">
+                <div class="stat-value" id="stat-sneeze">0</div>
+                <div class="stat-label">Sneezes</div>
+            </div>
+            <div class="stat-card stat-total">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Total Alerts</div>
+            </div>
+        </div>
+
+        <!-- Confidence Bars -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Class Confidence</span>
+            </div>
+            <div class="card-body">
+                <div class="bars-grid">
+                    <!-- Cough -->
+                    <div class="bar-item">
+                        <label><span>🫁 Cough</span><span id="val-cough">0%</span></label>
+                        <div class="bar-track"><div class="bar-fill bar-cough" id="bar-cough"></div></div>
+                    </div>
+                    <!-- Sneeze -->
+                    <div class="bar-item">
+                        <label><span>🤧 Sneeze</span><span id="val-sneeze">0%</span></label>
+                        <div class="bar-track"><div class="bar-fill bar-sneeze" id="bar-sneeze"></div></div>
+                    </div>
+                    <!-- Talking -->
+                    <div class="bar-item">
+                        <label><span>🗣️ Talking</span><span id="val-talking">0%</span></label>
+                        <div class="bar-track"><div class="bar-fill bar-talking" id="bar-talking"></div></div>
+                    </div>
+                    <!-- Background Noise -->
+                    <div class="bar-item">
+                        <label><span>🔇 Noise</span><span id="val-noise">0%</span></label>
+                        <div class="bar-track"><div class="bar-fill bar-noise" id="bar-noise"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                🔔 Alert Logs
+                <span class="badge" id="alert-count">0</span>
+            </div>
+            <button class="btn-clear" id="btn-clear-logs">Clear All</button>
+        </div>
+        <div class="alert-scroll" id="alert-list">
+            <!-- Alert entries are injected here by JS -->
+            <div class="empty-state" id="empty-alerts">
+                <div class="icon">🛡️</div>
+                <p>No alerts yet.<br/>Start monitoring to detect cough &amp; sneeze events.</p>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="/static/js/main.js"></script>
+
+</body>
+</html>

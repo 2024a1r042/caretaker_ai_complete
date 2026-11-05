@@ -1,0 +1,273 @@
+<!-- e:\model_test\caretaker\frontend\weather_widget.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link href="vendor/bootstrap-5.3.0.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <script src="vendor/chart-4.4.1.umd.js"></script>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --pastel-mint: #B2F7EF;
+            --pastel-peach: #FFDAC1;
+            --pastel-lavender: #E2D1F9;
+        }
+
+        .weather-widget {
+            background: linear-gradient(135deg, var(--primary) 0%, #6BB5FF 100%);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            margin: 0 auto;
+        }
+
+        .gauge {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .gauge-label {
+            position: absolute;
+            bottom: 20%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .gauge-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .weather-location {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .weather-location h2 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .weather-location p {
+            opacity: 0.8;
+            margin: 5px 0 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5">
+        <div class="weather-widget">
+            <div class="weather-location">
+                <p id="current-time">--:-- --</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Temperature Gauge -->
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="gauge-container">
+                            <canvas id="tempGauge" class="gauge"></canvas>
+                            <div class="gauge-value" id="tempValue">--°C</div>
+                            <div class="gauge-label">
+                                <i class="fas fa-thermometer-half gauge-icon"></i><br>
+                                Temperature
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Humidity Gauge -->
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="gauge-container">
+                            <canvas id="humidityGauge" class="gauge"></canvas>
+                            <div class="gauge-value" id="humidityValue">--%</div>
+                            <div class="gauge-label">
+                                <i class="fas fa-tint gauge-icon"></i><br>
+                                Humidity
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AQI Gauge -->
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="gauge-container">
+                            <canvas id="aqiGauge" class="gauge"></canvas>
+                            <div class="gauge-value" id="aqiValue">--</div>
+                            <div class="gauge-label">
+                                <i class="fas fa-wind gauge-icon"></i><br>
+                                AQI Index
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const API_BASE_URL = 'http://127.0.0.1:8000/api';
+        const TOKEN = localStorage.getItem('token');
+
+        // Initialize gauges
+        function createGauge(canvasId, value, max, colors, label) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 300, 0);
+
+            colors.forEach((color, index) => {
+                gradient.addColorStop(index / (colors.length - 1), color);
+            });
+
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [value, max - value],
+                        backgroundColor: [gradient, 'rgba(255, 255, 255, 0.1)'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Fetch weather data from API
+        async function fetchWeatherData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/weather/current`, {
+                    headers: {
+                        'Authorization': `Bearer ${TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch weather data');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                showAlert('Error loading weather data', 'danger');
+                return null;
+            }
+        }
+
+        // Update the UI with weather data
+        async function updateWeatherData() {
+            const data = await fetchWeatherData();
+            if (!data) return;
+
+            // Update the UI
+
+            document.getElementById('tempValue').textContent = `${data.temperature}°C`;
+            document.getElementById('humidityValue').textContent = `${data.humidity}%`;
+            document.getElementById('aqiValue').textContent = data.aqi;
+
+            // Update gauges
+            updateGauge(tempGauge, data.temperature, 50);
+            updateGauge(humidityGauge, data.humidity, 100);
+            updateGauge(aqiGauge, (data.aqi / 6) * 100, 100);
+        }
+
+        // Update gauge value
+        function updateGauge(gauge, value, max) {
+            gauge.data.datasets[0].data = [value, max - value];
+            gauge.update();
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            // You can implement a proper alert system here
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Check authentication
+            if (!TOKEN) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Create gauges
+            const tempGauge = createGauge('tempGauge', 0, 50, ['#4CAF50', '#FFC107', '#F44336']);
+            const humidityGauge = createGauge('humidityGauge', 0, 100, ['#2196F3', '#00BCD4']);
+            const aqiGauge = createGauge('aqiGauge', 0, 100, ['#4CAF50', '#FFC107', '#F44336']);
+
+            // Store gauges in window for later updates
+            window.tempGauge = tempGauge;
+            window.humidityGauge = humidityGauge;
+            window.aqiGauge = aqiGauge;
+
+            // Update time immediately and every minute
+            updateTime();
+            setInterval(updateTime, 60000);
+
+            // Initial data load
+            await updateWeatherData();
+
+            // Update data every 5 minutes
+            setInterval(updateWeatherData, 300000);
+        });
+    </script>
+</body>
+
+</html>

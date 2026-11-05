@@ -1,0 +1,11 @@
+# Elderly Inactivity Monitor - Requirements
+
+# Core Dependencies
+ultralytics>=8.0.0      # YOLOv8 for person detection
+opencv-python>=4.5.0    # Computer vision and webcam
+pillow>=9.0.0           # Image processing for Tkinter
+numpy>=1.22.0           # Numerical operations
+
+# Optional (for enhanced features)
+# winsound              # Audio alerts (Windows only, built-in)
+# playsound             # Cross-platform audio alerts

@@ -1,0 +1,26 @@
+[
+  {
+    "metric": "creatinine",
+    "value": 0.71
+  },
+  {
+    "metric": "glucose_fasting",
+    "value": 133.53
+  },
+  {
+    "metric": "hba1c",
+    "value": 4.35
+  },
+  {
+    "metric": "hdl_cholesterol",
+    "value": 48.1
+  },
+  {
+    "metric": "ldl_cholesterol",
+    "value": 91.18
+  },
+  {
+    "metric": "vitamin_d",
+    "value": 70.67
+  }
+]

@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="js/auth-guard.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTaker - Medical Report Management</title>
+    <meta name="description"
+        content="Upload, analyze, and track medical reports with AI-powered clinical intelligence.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <script src="vendor/chart-4.4.1.umd.js"></script>
+    <style>
+        :root {
+            --bg: #FDFBF7;
+            --bg-alt: #ffffff;
+            --card: rgba(255, 255, 255, 0.6);
+            --card-alt: rgba(255, 255, 255, 0.8);
+            --border: rgba(74, 144, 226, 0.2);
+            --text: #1A202C;
+            --muted: #4A5568;
+            --accent: #4A90E2;
+            --accent-2: #6BB5FF;
+            --danger: #fb7185;
+            --success: #34d399;
+            --warning: #f6c23e;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --pastel-mint: #B2F7EF;
+            --pastel-peach: #FFDAC1;
+            --pastel-lavender: #E2D1F9;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(at 20% 30%, var(--pastel-mint) 0px, transparent 55%),
+                radial-gradient(at 80% 10%, var(--pastel-peach) 0px, transparent 50%),
+                radial-gradient(at 40% 80%, var(--pastel-lavender) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .app-shell {
+            min-height: 100vh;
+            display: flex;
+            gap: 28px;
+            padding: 28px clamp(16px, 3vw, 48px);
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 28px;
+            padding: 24px;
+            backdrop-filter: blur(24px);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: sticky;
+            top: 28px;
+            max-height: calc(100vh - 56px);
+            overflow-y: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .brand span {
+            color: var(--accent);
+        }
+
+        .sidebar-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(74, 144, 226, 0.06);
+            border: 1px solid rgba(74, 144, 226, 0.15);
+            transition: all 0.2s;
+        }
+
+        .sidebar-back:hover {
+            background: rgba(74, 144, 226, 0.12);
+            transform: translateX(-2px);
+        }
+
+        .section-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .recipient-search {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--text);
+            font-size: 0.88rem;
+        }
+
+        .recipient-list {
+            max-height: 50vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .recipient-card {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .recipient-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .recipient-card.active {
+            border-color: var(--accent);
+            background: white;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .recipient-card h5 {
+            margin: 0 0 3px;
+            font-size: 0.95rem;
+        }
+
+        .recipient-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        /* ── Main ── */
+        main.content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            min-width: 0;
+        }
+
+        /* Header bar */
+        .page-header {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 24px;
+            padding: 24px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .page-header .subtitle {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin: 4px 0 0;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .primary-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .ghost-btn {
+            background: white;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ghost-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .ghost-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .danger-btn {
+            background: rgba(251, 113, 133, 0.1);
+            border: 1px solid rgba(251, 113, 133, 0.3);
+            color: #ef4444;
+            border-radius: 10px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: all 0.2s;
+        }
+
+        .danger-btn:hover {
+            background: rgba(251, 113, 133, 0.2);
+        }
+
+        /* Tabs */
+        .tab-bar {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--muted);
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--text);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cards */
+        .panel {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: clamp(20px, 2.5vw, 32px);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .stat-pill {
+            background: white;
+            border-radius: 16px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-pill span {
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .stat-pill strong {
+            display: block;
+            font-size: 1.3rem;
+            margin-top: 4px;
+            color: var(--text);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        /* Upload Zone */
+        .upload-drop-zone {
+            border: 2px dashed rgba(74, 144, 226, 0.3);
+            border-radius: 18px;
+            padding: 32px 20px;
+            text-align: center;
+            background: rgba(74, 144, 226, 0.03);
+            transition: all 0.25s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-drop-zone:hover,
+        .upload-drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(74, 144, 226, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .upload-drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .upload-progress {
+            display: none;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(74, 144, 226, 0.15);
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            border-radius: 999px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Report List */
+        .report-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .report-card {
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.6);
+            transition: all 0.2s;
+        }
+
+        .report-card:hover {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .report-card h4 {
+            margin: 0 0 6px;
+            font-size: 0.95rem;
+        }
+
+        .report-meta {
+            color: var(--muted);
+            font-size: 0.8rem;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .report-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .status-badge.pending {
+            background: rgba(246, 194, 62, 0.15);
+            color: #d97706;
+        }
+
+        .status-badge.processing {
+            background: rgba(74, 144, 226, 0.15);
+            color: var(--accent);
+        }
+
+        .status-badge.completed {
+            background: rgba(52, 211, 153, 0.15);
+            color: #059669;
+        }
+
+        .status-badge.failed {
+            background: rgba(251, 113, 133, 0.15);
+            color: #dc2626;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .grid-13 {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        /* Condition cards */
+        .condition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 14px;
+        }
+
+        /* Summary panel */
+        .summary-one-pager {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .summary-block {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            transition: all 0.2s;
+        }
+
+        .summary-block:hover {
+            background: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .summary-block h4 {
+            margin: 0 0 10px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background: white;
+            border: 1px solid rgba(74, 144, 226, 0.25);
+            border-radius: 16px;
+            padding: 14px 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            z-index: 9999;
+            transform: translateY(120px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #toast.success {
+            border-color: rgba(52, 211, 153, 0.4);
+        }
+
+        #toast.error {
+            border-color: rgba(251, 113, 133, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .app-shell {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: static;
+                max-height: none;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .recipient-list {
+                max-height: 200px;
+            }
+
+            .grid-2,
+            .grid-13 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-btn {
+                font-size: 0.8rem;
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- ═══ Sidebar ═══ -->
+        <aside class="sidebar">
+            <div class="brand">Care<span>Taker</span></div>
+            <a href="profile.html" class="sidebar-back">
+                <i class="fas fa-arrow-left"></i> Back to Profile
+            </a>
+            <div>
+                <div class="section-title">Care Recipients</div>
+                <input id="recipientSearch" type="search" class="recipient-search" placeholder="Search recipients...">
+                <div id="recipientsList" class="recipient-list">
+                    <p class="muted" style="font-size:0.85rem;">Loading...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ Main Content ═══ -->
+        <main class="content">
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <p class="eyebrow">Clinical Intelligence</p>
+                    <h1>Patient Health Insights</h1>
+                    <p class="subtitle">View AI-powered medical history analysis and clinical intelligence for <strong
+                            id="headerRecipientName">—</strong></p>
+                </div>
+                <div class="action-bar">
+                    <a href="settings.html#reportsSection" class="ghost-btn" style="text-decoration:none;">
+                        <i class="fas fa-cog"></i> Manage Reports
+                    </a>
+                    <button id="btnRunAnalysis" class="primary-btn" disabled>
+                        <i class="fas fa-brain"></i> Run Full Analysis
+                    </button>
+                    <button id="btnRefresh" class="ghost-btn" disabled>
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="tab-reports">
+                    <i class="fas fa-file-medical"></i> Reports & Upload
+                </button>
+                <button class="tab-btn" data-tab="tab-clinical">
+                    <i class="fas fa-heartbeat"></i> Clinical Intelligence
+                </button>
+                <button class="tab-btn" data-tab="tab-summary">
+                    <i class="fas fa-user-md"></i> Doctor's Summary
+                </button>
+            </div>
+
+            <!-- TAB 1: Reports & Upload -->
+            <div id="tab-reports" class="tab-content active">
+                <!-- Upload Panel -->
+                <div id="uploadPanel" class="panel" style="display:none; margin-bottom:20px;">
+                    <p class="eyebrow" style="color:var(--accent); margin-bottom:14px;">Upload Medical Report</p>
+                    <div class="upload-drop-zone" id="uploadDropZone">
+                        <input type="file" id="reportFileInput" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+                        <span class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                        <p style="margin:0; font-weight:600;">Drag & drop a report here or click to browse</p>
+                        <p class="muted" style="font-size:0.8rem; margin-top:6px;">PDF, PNG, JPEG, DOC — Max 5 MB</p>
+                    </div>
+                    <p id="uploadFileName" style="display:none; margin:10px 0 0; font-weight:600; font-size:0.88rem;">
+                    </p>
+                    <div id="uploadProgress" class="upload-progress">
+                        <div id="uploadProgressBar" class="upload-progress-bar"></div>
+                    </div>
+                    <button id="uploadReportBtn" class="primary-btn" style="margin-top:14px;" disabled>
+                        <i class="fas fa-upload"></i> Upload Report
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid-3" style="margin-bottom:20px;">
+                    <div class="stat-pill"><span>Total Reports</span><strong id="statTotalReports">0</strong></div>
+                    <div class="stat-pill"><span>Processed</span><strong id="statProcessed">0</strong></div>
+                    <div class="stat-pill"><span>Pending / Failed</span><strong id="statPending">0 / 0</strong></div>
+                </div>
+
+                <!-- Sort -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                    <p class="eyebrow" style="margin:0;">Reports</p>
+                    <select id="reportSortOrder"
+                        style="padding:5px 12px; border-radius:12px; font-size:0.8rem; border:1px solid rgba(148,163,184,0.3); background:rgba(255,255,255,0.7);">
+                        <option value="date_desc">Newest First</option>
+                        <option value="date_asc">Oldest First</option>
+                        <option value="name_asc">Name (A-Z)</option>
+                    </select>
+                </div>
+
+                <!-- Report List -->
+                <div id="reportsList" class="report-list">
+                    <p class="muted" style="text-align:center; padding:40px;">Select a care recipient to view reports.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ═══ TAB 2: Clinical Intelligence ═══ -->
+            <div id="tab-clinical" class="tab-content">
+                <!-- Empty state -->
+                <div id="clinicalEmpty" class="panel" style="text-align:center; padding:60px 20px;">
+                    <i class="fas fa-notes-medical"
+                        style="font-size:3rem; color:var(--accent); opacity:0.3; margin-bottom:16px; display:block;"></i>
+                    <p style="font-size:1.05rem; font-weight:600;">No clinical data yet</p>
+                    <p class="muted">Upload a medical report and run analysis to see clinical intelligence.</p>
+                </div>
+
+                <!-- Dashboard (hidden until data) -->
+                <div id="clinicalDashboard" style="display:none;">
+                    <!-- Row 1: Risk + Health Analysis -->
+                    <div class="grid-13" style="margin-bottom:20px;">
+                        <div class="info-card" style="text-align:center;">
+                            <p class="eyebrow" style="color:var(--accent); margin-bottom:12px;">Risk Score</p>
+                            <canvas id="riskGauge" width="200" height="130" style="margin:0 auto;"></canvas>
+                            <div id="riskCategory" style="font-size:1.3rem; font-weight:700; margin-top:8px;"></div>
+                            <div id="riskTrajectory" style="font-size:0.82rem; color:var(--muted); margin-top:4px;">
+                            </div>
+                            <div id="riskFactors"
+                                style="text-align:left; margin-top:14px; border-top:1px solid rgba(0,0,0,0.05); padding-top:12px;">
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <p class="eyebrow" style="color:var(--accent); margin:0;">Health Analysis</p>
+                                <span id="alertBadge"
+                                    style="background:var(--danger); color:white; border-radius:20px; padding:3px 12px; font-size:0.75rem; font-weight:700; display:none;"></span>
+                            </div>
+                            <div id="healthStatus" style="font-size:0.92rem; line-height:1.7; margin-bottom:14px;">
+                                <span class="muted">Run a full analysis to see AI health interpretation.</span>
+                            </div>
+                            <div id="alertsList"
+                                style="margin-top:12px; border-top:1px solid rgba(0,0,0,0.05); padding-top:12px; display:none;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Active Conditions -->
+                    <div class="panel" style="margin-bottom:20px;">
+                        <p class="eyebrow" style="color:var(--accent); margin-bottom:14px;">Active Conditions</p>
+                        <div id="activeConditions" class="condition-grid"></div>
+                        <details id="pastConditionsToggle" style="margin-top:16px; display:none;">
+                            <summary style="cursor:pointer; color:var(--muted); font-size:0.85rem; font-weight:500;">
+                                Past / Resolved Conditions</summary>
+                            <div id="pastConditions" class="condition-grid" style="margin-top:10px;"></div>
+                        </details>
+                    </div>
+
+                    <!-- Row 3: Lab Trends + Disease Timeline -->
+                    <div class="grid-2">
+                        <div class="info-card">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px;">
+                                <div>
+                                    <p class="eyebrow" style="color:var(--accent); margin:0 0 4px;">Lab Value Trends</p>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <label for="confThreshold" style="font-size:0.75rem; color:var(--muted); font-weight:600;">Min Confidence:</label>
+                                        <input type="range" id="confThreshold" min="0" max="0.95" step="0.05" value="0" style="width:80px;" title="Filter out low-confidence data points" oninput="this.nextElementSibling.textContent = Math.round(this.value * 100) + '%'; if(window.currentTrendsData) renderTrendChart(window.currentTrendsData);">
+                                        <span style="font-size:0.7rem; font-weight:700; color:var(--text); width:30px;">0%</span>
+                                    </div>
+                                </div>
+                                <select id="metricSelect" style="padding:4px 14px; border-radius:12px; font-size:0.78rem; border:1px solid rgba(74,144,226,0.2); background:rgba(255,255,255,0.6); outline:none;"></select>
+                            </div>
+                            <div id="trendBadges" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                            </div>
+
+                            <!-- Disease Timeline -->
+                            <div class="panel">
+                                <h4
+                                    style="margin:0 0 16px; color:var(--text); font-size:0.95rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span><i class="fas fa-history" style="color:var(--accent); margin-right:6px;"></i>
+                                        Disease Timeline</span>
+                                </h4>
+                                <div style="height:220px; width:100%; position:relative;">
+                                    <canvas id="timelineChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Condition Severity Graph -->
+                            <div class="panel">
+                                <h4
+                                    style="margin:0 0 16px; color:var(--text); font-size:0.95rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span><i class="fas fa-chart-line"
+                                            style="color:var(--warning); margin-right:6px;"></i> Condition Severity
+                                        Tracker</span>
+                                    <select id="conditionSelect" class="form-input"
+                                        style="width:160px; padding:4px 8px; font-size:0.8rem;"></select>
+                                </h4>
+                                <div style="height:220px; width:100%; position:relative;">
+                                    <canvas id="severityChart"></canvas>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ TAB 3: Doctor's Summary ═══ -->
+                <div id="tab-summary" class="tab-content">
+                    <div id="summaryEmpty" class="panel" style="text-align:center; padding:60px 20px;">
+                        <i class="fas fa-stethoscope"
+                            style="font-size:3rem; color:var(--accent); opacity:0.3; margin-bottom:16px; display:block;"></i>
+                        <p style="font-size:1.05rem; font-weight:600;">No summary available</p>
+                        <p class="muted">Upload reports and run analysis to generate a doctor's summary.</p>
+                    </div>
+                    <div id="summaryDashboard" style="display:none;">
+                        <!-- Quick Stats Row -->
+                        <div class="grid-3" style="margin-bottom:20px;">
+                            <div class="stat-pill" style="border-left:4px solid var(--accent);">
+                                <span>Risk Level</span>
+                                <strong id="sumRiskLevel">—</strong>
+                            </div>
+                            <div class="stat-pill" style="border-left:4px solid var(--success);">
+                                <span>Active Conditions</span>
+                                <strong id="sumConditionCount">0</strong>
+                            </div>
+                            <div class="stat-pill" style="border-left:4px solid var(--warning);">
+                                <span>Unread Alerts</span>
+                                <strong id="sumAlertCount">0</strong>
+                            </div>
+                        </div>
+                        <div class="summary-one-pager" id="summaryBlocks"></div>
+                    </div>
+                </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"><span id="toastIcon"></span><span id="toastMsg"></span></div>
+
+    <!-- ═══ JavaScript ═══ -->
+    <script src="js/medicalReports.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,844 @@
+{
+    "f0b4876e-5593-4239-abf4-3be1105fc0de": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\ab57c37d-3b5d-4bcf-ad8d-8ccb38cee5b2.mp4",
+        "output_file": "processed_videos\\analyzed_ab57c37d-3b5d-4bcf-ad8d-8ccb38cee5b2.mp4",
+        "output_filename": "analyzed_ab57c37d-3b5d-4bcf-ad8d-8ccb38cee5b2.mp4",
+        "start_time": 1779985805.8863018,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-28T22:01:00.886483"
+    },
+    "d500d432-2766-474a-b590-b1e6c113cbcc": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\4c4f0dff-7ced-43bd-bf4b-02b310ff3f59.mp4",
+        "output_file": "processed_videos\\analyzed_4c4f0dff-7ced-43bd-bf4b-02b310ff3f59.mp4",
+        "output_filename": "analyzed_4c4f0dff-7ced-43bd-bf4b-02b310ff3f59.mp4",
+        "start_time": 1779985880.3763342,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-28T22:02:15.038943"
+    },
+    "b9311f52-b403-49f1-9dfe-a45e1812a985": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\05280dad-48f7-4c26-ae05-5a4b6f117b53.avi",
+        "output_file": "processed_videos\\analyzed_05280dad-48f7-4c26-ae05-5a4b6f117b53.mp4",
+        "output_filename": "analyzed_05280dad-48f7-4c26-ae05-5a4b6f117b53.mp4",
+        "start_time": 1779986112.5508485,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-28T22:10:48.499057"
+    },
+    "4f964292-123e-4c9c-a1ae-cfe33a0563c4": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\2e72a518-cee7-4e7b-8dd6-e9aee1e1dde8.mp4",
+        "output_file": "processed_videos\\analyzed_2e72a518-cee7-4e7b-8dd6-e9aee1e1dde8.mp4",
+        "output_filename": "analyzed_2e72a518-cee7-4e7b-8dd6-e9aee1e1dde8.mp4",
+        "start_time": 1779986541.4011085,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 5.27,
+                "message": "Fall Detected",
+                "frame": 158
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T22:13:55.562949"
+    },
+    "44c2a8d0-e831-4d93-9297-120feeda69fb": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\04c0c6b8-8fe0-4848-914a-47c42204fed2.mp4",
+        "output_file": "processed_videos\\analyzed_04c0c6b8-8fe0-4848-914a-47c42204fed2.mp4",
+        "output_filename": "analyzed_04c0c6b8-8fe0-4848-914a-47c42204fed2.mp4",
+        "start_time": 1779986899.7185767,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 2.13,
+                "message": "Fall Detected",
+                "frame": 64
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T22:18:42.985785"
+    },
+    "13c4dd65-3992-4395-9684-61410c9e4666": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\23d9b668-11ac-4b88-a0c8-b22361efe25c.mp4",
+        "output_file": "processed_videos\\analyzed_23d9b668-11ac-4b88-a0c8-b22361efe25c.mp4",
+        "output_filename": "analyzed_23d9b668-11ac-4b88-a0c8-b22361efe25c.mp4",
+        "start_time": 1779987610.3810842,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 0.67,
+                "message": "Fall Detected",
+                "frame": 20
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T22:30:29.170118"
+    },
+    "590c41d0-63a3-43e1-a1b1-379fcf076a50": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\b864c45f-a7de-4cb4-9bb6-1b026af25a37.mp4",
+        "output_file": "processed_videos\\analyzed_b864c45f-a7de-4cb4-9bb6-1b026af25a37.mp4",
+        "output_filename": "analyzed_b864c45f-a7de-4cb4-9bb6-1b026af25a37.mp4",
+        "start_time": 1779987920.9673462,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.03,
+                "message": "Fall Detected",
+                "frame": 31
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T22:35:38.421469"
+    },
+    "8640a96a-2252-487a-9f71-3e1b1607e54c": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\544dc722-8c78-4f2f-aecf-7faedb3750d6.mp4",
+        "output_file": "processed_videos\\analyzed_544dc722-8c78-4f2f-aecf-7faedb3750d6.mp4",
+        "output_filename": "analyzed_544dc722-8c78-4f2f-aecf-7faedb3750d6.mp4",
+        "start_time": 1779987993.8463924,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.37,
+                "message": "Fall Detected",
+                "frame": 41
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T22:37:08.696236"
+    },
+    "7a9092b9-27f7-47d4-a4e3-3348716c13d3": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\1acd60e3-118c-43eb-a272-f48e0cf1b8bd.avi",
+        "output_file": "processed_videos\\analyzed_1acd60e3-118c-43eb-a272-f48e0cf1b8bd.mp4",
+        "output_filename": "analyzed_1acd60e3-118c-43eb-a272-f48e0cf1b8bd.mp4",
+        "start_time": 1779988123.2718248,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.6,
+                "message": "Fall Detected",
+                "frame": 432
+            },
+            {
+                "timestamp": 4.15,
+                "message": "Fall Detected",
+                "frame": 498
+            },
+            {
+                "timestamp": 4.8,
+                "message": "Fall Detected",
+                "frame": 576
+            },
+            {
+                "timestamp": 5.32,
+                "message": "Fall Detected",
+                "frame": 638
+            },
+            {
+                "timestamp": 5.83,
+                "message": "Fall Detected",
+                "frame": 699
+            },
+            {
+                "timestamp": 6.35,
+                "message": "Fall Detected",
+                "frame": 762
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T22:46:11.597116"
+    },
+    "a4b27afe-45c6-4aa6-b55f-e59cec345b54": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\296603ea-369b-452d-b811-ffb3e2898861.mp4",
+        "output_file": "processed_videos\\analyzed_296603ea-369b-452d-b811-ffb3e2898861.mp4",
+        "output_filename": "analyzed_296603ea-369b-452d-b811-ffb3e2898861.mp4",
+        "start_time": 1779989896.4219236,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-28T23:08:43.547807"
+    },
+    "f30bcb51-aad8-4769-8659-c16d1fd68b6f": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\bb70a1d4-e1e9-45da-beed-de7283c0f6f2.mp4",
+        "output_file": "processed_videos\\analyzed_bb70a1d4-e1e9-45da-beed-de7283c0f6f2.mp4",
+        "output_filename": "analyzed_bb70a1d4-e1e9-45da-beed-de7283c0f6f2.mp4",
+        "start_time": 1779989983.5903773,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.23,
+                "message": "Fall Detected",
+                "frame": 37
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:10:17.842726"
+    },
+    "500dfeba-7d0e-4733-9e0a-7713b5b1b110": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\3cc94b3e-2750-4e8e-ab40-64d01bc8f1b1.mp4",
+        "output_file": "processed_videos\\analyzed_3cc94b3e-2750-4e8e-ab40-64d01bc8f1b1.mp4",
+        "output_filename": "analyzed_3cc94b3e-2750-4e8e-ab40-64d01bc8f1b1.mp4",
+        "start_time": 1779990069.0094311,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 0.67,
+                "message": "Fall Detected",
+                "frame": 20
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:11:43.010351"
+    },
+    "62a4f3ad-4185-4af3-ab1c-2b4c9a5080c8": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\531adcad-d810-446e-9327-57a10218f4b9.mp4",
+        "output_file": "processed_videos\\analyzed_531adcad-d810-446e-9327-57a10218f4b9.mp4",
+        "output_filename": "analyzed_531adcad-d810-446e-9327-57a10218f4b9.mp4",
+        "start_time": 1779990134.2646732,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 0.83,
+                "message": "Fall Detected",
+                "frame": 25
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:12:41.911482"
+    },
+    "fc2ab706-43d1-489f-adb5-5cb5b11fa716": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\bf8736b1-e666-4a17-9a92-11903ed20ebe.mp4",
+        "output_file": "processed_videos\\analyzed_bf8736b1-e666-4a17-9a92-11903ed20ebe.mp4",
+        "output_filename": "analyzed_bf8736b1-e666-4a17-9a92-11903ed20ebe.mp4",
+        "start_time": 1779990203.9816473,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.1,
+                "message": "Fall Detected",
+                "frame": 33
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:13:58.794733"
+    },
+    "72b45d66-4a02-41d8-ac8b-d569015c26f7": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\60f34e5d-a6b0-49f6-83ab-1afb897704e2.mp4",
+        "output_file": "processed_videos\\analyzed_60f34e5d-a6b0-49f6-83ab-1afb897704e2.mp4",
+        "output_filename": "analyzed_60f34e5d-a6b0-49f6-83ab-1afb897704e2.mp4",
+        "start_time": 1779990368.1771777,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.03,
+                "message": "Fall Detected",
+                "frame": 31
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:16:40.923611"
+    },
+    "d84a4d69-eddd-42c8-b480-a79bbc19322f": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\b9037fcb-59c9-4c0f-a36e-d9140f1687bc.mp4",
+        "output_file": "processed_videos\\analyzed_b9037fcb-59c9-4c0f-a36e-d9140f1687bc.mp4",
+        "output_filename": "analyzed_b9037fcb-59c9-4c0f-a36e-d9140f1687bc.mp4",
+        "start_time": 1779990468.6180842,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.63,
+                "message": "Fall Detected",
+                "frame": 49
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:18:21.055623"
+    },
+    "1e1d26d7-d73b-42c0-a90a-3a74432657ea": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\0619cf3b-4f0c-4194-8037-adeb73840b0f.mp4",
+        "output_file": "processed_videos\\analyzed_0619cf3b-4f0c-4194-8037-adeb73840b0f.mp4",
+        "output_filename": "analyzed_0619cf3b-4f0c-4194-8037-adeb73840b0f.mp4",
+        "start_time": 1779990514.140887,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.53,
+                "message": "Fall Detected",
+                "frame": 46
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:19:02.506828"
+    },
+    "4c207082-af47-453d-927c-7a7caaadebb6": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\9525e944-ab83-4e6c-85af-f759a5807451.mp4",
+        "output_file": "processed_videos\\analyzed_9525e944-ab83-4e6c-85af-f759a5807451.mp4",
+        "output_filename": "analyzed_9525e944-ab83-4e6c-85af-f759a5807451.mp4",
+        "start_time": 1779990569.373503,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 4.97,
+                "message": "Fall Detected",
+                "frame": 149
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:20:54.653843"
+    },
+    "8f458214-90f3-4ced-961d-49120082b7af": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\e54c1fb5-8cfb-4ec1-bb80-3c9e1c7546a8.avi",
+        "output_file": "processed_videos\\analyzed_e54c1fb5-8cfb-4ec1-bb80-3c9e1c7546a8.mp4",
+        "output_filename": "analyzed_e54c1fb5-8cfb-4ec1-bb80-3c9e1c7546a8.mp4",
+        "start_time": 1779990713.363125,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.15,
+                "message": "Fall Detected",
+                "frame": 378
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:25:31.137405"
+    },
+    "c21364fb-f8ba-4fb2-91af-77c8bdb2a1cb": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\1371aa64-c26a-4480-9675-61f7cfc664fc.avi",
+        "output_file": "processed_videos\\analyzed_1371aa64-c26a-4480-9675-61f7cfc664fc.mp4",
+        "output_filename": "analyzed_1371aa64-c26a-4480-9675-61f7cfc664fc.mp4",
+        "start_time": 1779990987.6398816,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.23,
+                "message": "Fall Detected",
+                "frame": 388
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:30:08.959468"
+    },
+    "83b55862-bde9-46d9-9698-4004ebb2ae9d": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\7fde2948-ac89-4d3c-b19f-2767e439ea7e.avi",
+        "output_file": "processed_videos\\analyzed_7fde2948-ac89-4d3c-b19f-2767e439ea7e.mp4",
+        "output_filename": "analyzed_7fde2948-ac89-4d3c-b19f-2767e439ea7e.mp4",
+        "start_time": 1779991738.747448,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.23,
+                "message": "Fall Detected",
+                "frame": 388
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-28T23:42:38.896741"
+    },
+    "26d2cb00-bd78-4181-95c0-6b1277f04b70": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\a006f37d-4a62-4e77-b1d4-34798f79ee07.avi",
+        "output_file": "processed_videos\\analyzed_a006f37d-4a62-4e77-b1d4-34798f79ee07.mp4",
+        "output_filename": "analyzed_a006f37d-4a62-4e77-b1d4-34798f79ee07.mp4",
+        "start_time": 1779992803.014691,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.23,
+                "message": "Fall Detected",
+                "frame": 388
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T00:04:05.120209"
+    },
+    "c122d231-462b-4f9d-955a-1e378fedd632": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\af802ca7-2436-4440-9fb5-13228558ec4b.avi",
+        "output_file": "processed_videos\\analyzed_af802ca7-2436-4440-9fb5-13228558ec4b.mp4",
+        "output_filename": "analyzed_af802ca7-2436-4440-9fb5-13228558ec4b.mp4",
+        "start_time": 1779993480.7546263,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.23,
+                "message": "Fall Detected",
+                "frame": 388
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T00:14:40.417513"
+    },
+    "67e15244-df91-41e0-a363-e0d272508181": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\13c11e27-f994-4d0e-96dd-7291d9edb11c.mp4",
+        "output_file": "processed_videos\\analyzed_13c11e27-f994-4d0e-96dd-7291d9edb11c.mp4",
+        "output_filename": "analyzed_13c11e27-f994-4d0e-96dd-7291d9edb11c.mp4",
+        "start_time": 1779994031.7800872,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-29T00:18:04.092181"
+    },
+    "bd3b57f5-33c2-4d97-b8fe-16e163adaa82": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\044d4bc2-9ec9-4f52-8612-ddcced14ff3a.mp4",
+        "output_file": "processed_videos\\analyzed_044d4bc2-9ec9-4f52-8612-ddcced14ff3a.mp4",
+        "output_filename": "analyzed_044d4bc2-9ec9-4f52-8612-ddcced14ff3a.mp4",
+        "start_time": 1779994419.5197985,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-29T00:24:40.352424"
+    },
+    "7a20f02d-fda8-4261-9406-06184fe37cfc": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\0da3eebf-6550-4b04-8760-162787fba187.mp4",
+        "output_file": "processed_videos\\analyzed_0da3eebf-6550-4b04-8760-162787fba187.mp4",
+        "output_filename": "analyzed_0da3eebf-6550-4b04-8760-162787fba187.mp4",
+        "start_time": 1779994711.8093727,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 8.73,
+                "message": "Fall Detected",
+                "frame": 262
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T00:29:39.180342"
+    },
+    "fbd7da30-73cc-4682-b8e5-d5011ec32dd5": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\70d75f34-c122-4031-80a3-033ab90fe98f.mp4",
+        "output_file": "processed_videos\\analyzed_70d75f34-c122-4031-80a3-033ab90fe98f.mp4",
+        "output_filename": "analyzed_70d75f34-c122-4031-80a3-033ab90fe98f.mp4",
+        "start_time": 1779995910.6896584,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-29T00:49:28.104871"
+    },
+    "adf45c14-d462-4bf6-ba62-1775d2222d44": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\cbce1590-42ac-4fff-acd2-b1d75eadd6e1.mp4",
+        "output_file": "processed_videos\\analyzed_cbce1590-42ac-4fff-acd2-b1d75eadd6e1.mp4",
+        "output_filename": "analyzed_cbce1590-42ac-4fff-acd2-b1d75eadd6e1.mp4",
+        "start_time": 1779995989.9214447,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 6.43,
+                "message": "Fall Detected",
+                "frame": 193
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T00:50:50.596429"
+    },
+    "2d03e9ef-7ceb-490b-808a-a7cc3dc8470a": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\e0d87df0-8588-4d3a-ac5e-dc77af9f1a94.mp4",
+        "output_file": "processed_videos\\analyzed_e0d87df0-8588-4d3a-ac5e-dc77af9f1a94.mp4",
+        "output_filename": "analyzed_e0d87df0-8588-4d3a-ac5e-dc77af9f1a94.mp4",
+        "start_time": 1779996247.152812,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-29T00:54:43.089929"
+    },
+    "5cab4806-2ee0-4934-9954-841489a52237": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\98c0f0b7-a331-4bc3-9cf3-e3e31dfb7df5.mp4",
+        "output_file": "processed_videos\\analyzed_98c0f0b7-a331-4bc3-9cf3-e3e31dfb7df5.mp4",
+        "output_filename": "analyzed_98c0f0b7-a331-4bc3-9cf3-e3e31dfb7df5.mp4",
+        "start_time": 1779996330.0697587,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.27,
+                "message": "Fall Detected",
+                "frame": 98
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T00:56:34.452692"
+    },
+    "ff5de161-d4e8-4e10-8d40-d0c173118470": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\7edee8bf-c4f2-491c-a588-9e6c73b05f3c.mp4",
+        "output_file": "processed_videos\\analyzed_7edee8bf-c4f2-491c-a588-9e6c73b05f3c.mp4",
+        "output_filename": "analyzed_7edee8bf-c4f2-491c-a588-9e6c73b05f3c.mp4",
+        "start_time": 1779996458.4832535,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 3.8,
+                "message": "Fall Detected",
+                "frame": 114
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T00:58:22.885796"
+    },
+    "c1ea0ce7-0a24-4f0c-8ace-94a1401eb0cd": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\37d619ae-b7b3-477b-b904-844b6a207c46.mp4",
+        "output_file": "processed_videos\\analyzed_37d619ae-b7b3-477b-b904-844b6a207c46.mp4",
+        "output_filename": "analyzed_37d619ae-b7b3-477b-b904-844b6a207c46.mp4",
+        "start_time": 1779996740.898792,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-29T01:05:31.696535"
+    },
+    "5f256cb4-2a95-4e23-9a8a-4fe305423855": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\1d3eea00-ad7b-4416-8ce0-53ff2b802719.mp4",
+        "output_file": "processed_videos\\analyzed_1d3eea00-ad7b-4416-8ce0-53ff2b802719.mp4",
+        "output_filename": "analyzed_1d3eea00-ad7b-4416-8ce0-53ff2b802719.mp4",
+        "start_time": 1779996976.5097923,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-29T01:07:17.761470"
+    },
+    "b46dbf5a-a0d4-42bf-8478-7368f0bc4293": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\edd0db0c-92fa-434e-ab29-a1984d20d02b.mp4",
+        "output_file": "processed_videos\\analyzed_edd0db0c-92fa-434e-ab29-a1984d20d02b.mp4",
+        "output_filename": "analyzed_edd0db0c-92fa-434e-ab29-a1984d20d02b.mp4",
+        "start_time": 1779997066.7058537,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-05-29T01:08:06.319534"
+    },
+    "5c45a7a6-887a-4257-9fe6-5552834f7420": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\9f11ea6e-4b45-45dd-8662-0a579eb1e2f7.mp4",
+        "output_file": "processed_videos\\analyzed_9f11ea6e-4b45-45dd-8662-0a579eb1e2f7.mp4",
+        "output_filename": "analyzed_9f11ea6e-4b45-45dd-8662-0a579eb1e2f7.mp4",
+        "start_time": 1779997104.694078,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 1.23,
+                "message": "Fall Detected",
+                "frame": 37
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T01:08:44.388134"
+    },
+    "91da16ca-f444-4a41-a2f7-e7015d8f2860": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "antrabali.21@gmail.com",
+        "username": "Antra",
+        "caretaker_id": 11,
+        "recipient_id": 8,
+        "input_file": "temp_uploads\\7e61bca7-997a-4f5c-8573-f6b34296dd83.mp4",
+        "output_file": "processed_videos\\analyzed_7e61bca7-997a-4f5c-8573-f6b34296dd83.mp4",
+        "output_filename": "analyzed_7e61bca7-997a-4f5c-8573-f6b34296dd83.mp4",
+        "start_time": 1779997150.2562788,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 0.67,
+                "message": "Fall Detected",
+                "frame": 20
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-05-29T01:09:27.988490"
+    },
+    "4dfaf8f2-511a-43c1-b855-817236f761f0": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "rahulgupta568@gmail.com",
+        "username": "rahulgupta_",
+        "caretaker_id": 55,
+        "recipient_id": 51,
+        "input_file": "temp_uploads\\9eeeb342-09c1-437d-9407-978a7e950c7e.mp4",
+        "output_file": "processed_videos\\analyzed_9eeeb342-09c1-437d-9407-978a7e950c7e.mp4",
+        "output_filename": "analyzed_9eeeb342-09c1-437d-9407-978a7e950c7e.mp4",
+        "start_time": 1793694522.23805,
+        "error": null,
+        "falls_detected": [],
+        "has_falls": false,
+        "completed_at": "2026-11-03T13:59:50.804127"
+    },
+    "9e485a2f-9686-48c3-957a-bad184308b51": {
+        "status": "completed",
+        "progress": 100,
+        "user_email": "rahulgupta568@gmail.com",
+        "username": "rahulgupta_",
+        "caretaker_id": 55,
+        "recipient_id": 51,
+        "input_file": "temp_uploads\\4c53ea30-f609-412a-8736-d26ec9b8d688.mp4",
+        "output_file": "processed_videos\\analyzed_4c53ea30-f609-412a-8736-d26ec9b8d688.mp4",
+        "output_filename": "analyzed_4c53ea30-f609-412a-8736-d26ec9b8d688.mp4",
+        "start_time": 1793694666.0049946,
+        "error": null,
+        "falls_detected": [
+            {
+                "timestamp": 2.87,
+                "message": "Hard fall: Head dropped 88% of standing height in 0.7 s; Peak downward speed 1.33 body-heights/s (fast, uncontrolled); Torso rotated 146\u00b0 (now 97\u00b0 from vertical); Body is at floor level (hips at 20% of standing height).",
+                "fall_type": "hard_fall",
+                "severity": "high",
+                "confidence": 0.98,
+                "evidence": [
+                    {
+                        "signal": "head_drop",
+                        "value": 0.88,
+                        "unit": "of standing height",
+                        "threshold": 0.28,
+                        "passed": true,
+                        "text": "Head dropped 88% of standing height in 0.7 s"
+                    },
+                    {
+                        "signal": "peak_speed",
+                        "value": 1.33,
+                        "unit": "standing-heights/s",
+                        "threshold": 0.85,
+                        "passed": true,
+                        "text": "Peak downward speed 1.33 body-heights/s (fast, uncontrolled)"
+                    },
+                    {
+                        "signal": "torso_rotation",
+                        "value": 146.4,
+                        "unit": "degrees",
+                        "threshold": 30,
+                        "passed": true,
+                        "text": "Torso rotated 146\u00b0 (now 97\u00b0 from vertical)"
+                    },
+                    {
+                        "signal": "on_ground",
+                        "value": 0.2,
+                        "unit": "hip height / standing height",
+                        "threshold": 0.15,
+                        "passed": true,
+                        "text": "Body is at floor level (hips at 20% of standing height)"
+                    },
+                    {
+                        "signal": "stayed_down",
+                        "value": 1.5,
+                        "unit": "s",
+                        "threshold": 1.5,
+                        "passed": true,
+                        "text": "Stayed on the ground for 1.5 s (did not get straight back up)"
+                    },
+                    {
+                        "signal": "learned_model",
+                        "value": 1.0,
+                        "unit": "probability",
+                        "threshold": 0.5,
+                        "passed": true,
+                        "text": "Pose-sequence model (BiGRU) fall probability 1.00"
+                    }
+                ],
+                "frame": 86
+            }
+        ],
+        "has_falls": true,
+        "completed_at": "2026-11-03T14:01:56.745169"
+    }
+}

@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="js/auth-guard.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Care-Recipient Profile</title>
+    <!-- Chart.js -->
+    <script src="vendor/chart-4.4.1.umd.js"></script>
+    <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Pastel Accents from Index/Dashboard */
+            --bg-color: #FDFBF7;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #1A202C;
+            --text-muted: #4A5568;
+            --accent: #4A90E2;
+            --accent-hover: #6BB5FF;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --border-light: rgba(74, 144, 226, 0.2);
+            --radius: 20px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+            --pastel-mint: #B2F7EF;
+            --pastel-peach: #FFDAC1;
+            --pastel-lavender: #E2D1F9;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(at 20% 30%, var(--pastel-mint) 0px, transparent 55%),
+                radial-gradient(at 80% 10%, var(--pastel-peach) 0px, transparent 50%),
+                radial-gradient(at 40% 80%, var(--pastel-lavender) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, var(--pastel-mint) 0px, transparent 40%);
+            background-attachment: fixed;
+            background-size: 120% 120%;
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: repeat(12, 1fr);
+            }
+
+            .col-span-12 {
+                grid-column: span 12;
+            }
+
+            .col-span-8 {
+                grid-column: span 8;
+            }
+
+            .col-span-6 {
+                grid-column: span 6;
+            }
+
+            .col-span-4 {
+                grid-column: span 4;
+            }
+
+            .col-span-3 {
+                grid-column: span 3;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header i {
+            color: var(--accent);
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .data-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .data-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .data-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.danger {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .badge.warning {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .badge.success {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .badge.info {
+            background: #ebf8ff;
+            color: #2b6cb0;
+        }
+
+        .list-item {
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .list-item-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .small-chart {
+            height: 150px;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 10px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-item {
+            border-left: 4px solid var(--danger);
+            padding: 12px;
+            background: #fff5f5;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .alert-item.critical {
+            border-color: #822727;
+            background: #fff5f5;
+        }
+
+        .alert-item.high {
+            border-color: var(--danger);
+            background: #fff5f5;
+        }
+
+        .alert-item.moderate {
+            border-color: var(--warning);
+            background: #fffff0;
+        }
+
+        .alert-item.low {
+            border-color: var(--success);
+            background: #f0fff4;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <h1><i class="fas fa-user-circle"></i> Medical Records</h1>
+        <div>
+            <button class="btn btn-outline" onclick="window.location.href='dashboard.html'"><i
+                    class="fas fa-arrow-left"></i> Back to Hub</button>
+        </div>
+    </div>
+
+    <div id="loadingIndicator" style="text-align: center; padding: 50px; font-size: 1.2rem; color: var(--text-muted);">
+        <i class="fas fa-spinner fa-spin"></i> Loading Profile Data...
+    </div>
+
+    <div id="errorContainer"
+        style="display: none; text-align: center; padding: 50px; color: var(--danger); background: white; border-radius: 12px;">
+        <h2><i class="fas fa-exclamation-triangle"></i> Error Loading Data</h2>
+        <p id="errorMessage"></p>
+        <button class="btn" onclick="window.location.href='dashboard.html'">Return to Hub</button>
+    </div>
+
+    <div id="profileDashboard" class="dashboard-container" style="display: none;">
+
+        <!-- SECTION 1: OVERVIEW & SECTION 10: INSIGHTS -->
+        <div class="card col-span-12">
+            <div class="card-header">
+                <h2><i class="fas fa-id-card"></i> Senior Overview & AI Insights</h2>
+            </div>
+            <div class="data-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));"
+                id="overviewGrid">
+                <!-- Javascript populated -->
+            </div>
+        </div>
+
+        <!-- SECTION 7: VITALS DASHBOARD -->
+        <div class="card col-span-12">
+            <div class="card-header">
+                <h2><i class="fas fa-heartbeat"></i> Vital Signs Trends</h2>
+            </div>
+            <div class="chart-container" style="height: 350px;">
+                <canvas id="vitalChart"></canvas>
+            </div>
+        </div>
+
+        <!-- SECTION 2: ACTIVE MEDICAL CONDITIONS -->
+        <div class="card col-span-4">
+            <div class="card-header">
+                <h2><i class="fas fa-stethoscope"></i> Active Medical Conditions</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-sm btn-outline" onclick="showHistory('conditions')"><i
+                            class="fas fa-history"></i></button>
+                    <button class="btn btn-sm" onclick="showAddModal('condition')" style="background:#10B981; color:#fff; border:none; font-weight:600; padding:6px 14px; border-radius:8px; font-size:0.8rem;"><i class="fas fa-plus" style="margin-right:4px;"></i> Add</button>
+                </div>
+            </div>
+            <div id="conditionsList" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- SECTION 3: MEDICATIONS -->
+        <div class="card col-span-4">
+            <div class="card-header">
+                <h2><i class="fas fa-pills"></i> Active Medications</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-sm btn-outline" onclick="showHistory('medications')"><i
+                            class="fas fa-history"></i></button>
+                    <button class="btn btn-sm" onclick="showAddModal('medication')" style="background:#10B981; color:#fff; border:none; font-weight:600; padding:6px 14px; border-radius:8px; font-size:0.8rem;"><i class="fas fa-plus" style="margin-right:4px;"></i> Add</button>
+                    <button class="btn btn-sm btn-outline"
+                        onclick="window.location.href='order_medicines.html?recipient_id=' + recipientId"
+                        style="background:#10B981; color:white; border:none;" title="Order ongoing medicines online"><i
+                            class="fas fa-shopping-cart"></i> Order</button>
+                </div>
+            </div>
+            <div id="medicationsList" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- SECTION 4: ALLERGIES -->
+        <div class="card col-span-4">
+            <div class="card-header">
+                <h2><i class="fas fa-allergies"></i> Allergies / Sensitivities</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-sm btn-outline" onclick="showHistory('allergies')"><i
+                            class="fas fa-history"></i></button>
+                    <button class="btn btn-sm" onclick="showAddModal('allergy')" style="background:#10B981; color:#fff; border:none; font-weight:600; padding:6px 14px; border-radius:8px; font-size:0.8rem;"><i class="fas fa-plus" style="margin-right:4px;"></i> Add</button>
+                </div>
+            </div>
+            <div id="allergiesList" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- SECTION 6: LAB TEST TRENDS -->
+        <div class="card col-span-12">
+            <div class="card-header">
+                <h2><i class="fas fa-vial"></i> Lab Results & Trends</h2>
+                <select id="labMetricSelect" style="padding: 4px; border-radius: 4px;">
+                    <option value="">Select Test...</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="labChart"></canvas>
+            </div>
+        </div>
+
+        <!-- NEW SECTION: ACTIONABLE RECOMMENDATIONS -->
+        <div class="card col-span-6">
+            <div class="card-header">
+                <h2><i class="fas fa-user-md"></i> Actionable Recommendations</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-sm btn-outline" id="btnRefreshRecs" onclick="refreshRecommendations()" title="Trigger intelligent re-analysis of all health data.">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div id="recommendationsList" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- SECTION 9: CLINICAL ALERTS -->
+        <div class="card col-span-6">
+            <div class="card-header">
+                <h2><i class="fas fa-bell"></i> Clinical Alerts</h2>
+            </div>
+            <div id="alertsList" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+    </div>
+
+    <!-- MODALS -->
+    <!-- Add/Update Condition -->
+    <div id="conditionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="conditionModalTitle">Add Medical Condition</h3>
+                <button class="btn btn-sm btn-outline" onclick="closeModal('conditionModal')">&times;</button>
+            </div>
+            <form id="conditionForm">
+                <input type="hidden" id="condId">
+                <div class="form-group">
+                    <label>Condition Name</label>
+                    <input type="text" id="condName" required placeholder="e.g. Hypertension">
+                </div>
+                <div class="form-group">
+                    <label>Severity</label>
+                    <select id="condSeverity">
+                        <option value="mild">Mild</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="severe">Severe</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="condStatus">
+                        <option value="active">Active</option>
+                        <option value="improving">Improving</option>
+                        <option value="worsening">Worsening</option>
+                        <option value="controlled">Controlled</option>
+                        <option value="resolved">Resolved (History)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('conditionModal')">Cancel</button>
+                    <button type="submit" class="btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- In-page Medication Toast -->
+    <div id="medReminderToast" style="display:none;position:fixed;top:20px;right:20px;z-index:9999;max-width:360px;
+         background:linear-gradient(135deg,#1a365d,#2a69ac);color:#fff;border-radius:14px;
+         padding:18px 22px;box-shadow:0 8px 32px rgba(0,0,0,0.35);font-family:'Segoe UI',sans-serif;">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+            <span style="font-size:28px;line-height:1;">💊</span>
+            <div style="flex:1;">
+                <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Medicine Reminder</div>
+                <div id="medReminderToastBody" style="font-size:13px;opacity:0.9;"></div>
+            </div>
+            <button onclick="document.getElementById('medReminderToast').style.display='none';"
+                style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;">×</button>
+        </div>
+    </div>
+
+    <!-- Add/Update Medication -->
+    <div id="medicationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="medicationModalTitle">Add Medication</h3>
+                <button class="btn btn-sm btn-outline" onclick="closeModal('medicationModal')">&times;</button>
+            </div>
+            <form id="medicationForm">
+                <input type="hidden" id="medicationId">
+                <div class="form-group">
+                    <label>Medicine Name</label>
+                    <input type="text" id="medName" required placeholder="e.g. Metformin">
+                </div>
+                <div class="form-group">
+                    <label>Dosage</label>
+                    <input type="text" id="medDosage" placeholder="e.g. 500mg">
+                </div>
+                <div class="form-group">
+                    <label>Frequency</label>
+                    <input type="text" id="medFrequency" placeholder="e.g. Twice daily">
+                </div>
+                <div class="form-group">
+                    <label>Schedule Time <small style="color:#94a3b8;font-weight:400;">— for reminders (e.g. 08:00,
+                            20:00)</small></label>
+                    <input type="text" id="medSchedule" placeholder="e.g. 08:00, 20:00">
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="medStartDate">
+                </div>
+                <div class="form-group">
+                    <label style="display:flex;align-items:center;gap:10px;">
+                        Duration (days)
+                        <span style="font-size:12px;color:#94a3b8;font-weight:400;">— leave blank or check
+                            Lifetime</span>
+                    </label>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <input type="number" id="medDuration" min="1" max="3650" placeholder="e.g. 10" style="flex:1;"
+                            oninput="document.getElementById('medLifetime').checked=false;">
+                        <label
+                            style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;cursor:pointer;">
+                            <input type="checkbox" id="medLifetime"
+                                onchange="if(this.checked){document.getElementById('medDuration').value='';document.getElementById('medDuration').disabled=true;}else{document.getElementById('medDuration').disabled=false;}">
+                            Lifetime / Ongoing
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div>
+                        <label>Current Stock (units)</label>
+                        <input type="number" id="medStock" min="0" placeholder="e.g. 30">
+                    </div>
+                    <div>
+                        <label>Doses per Day</label>
+                        <input type="number" id="medDosesPerDay" min="1" placeholder="e.g. 2">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="medStatus">
+                        <option value="active">Active</option>
+                        <option value="completed">Completed (History)</option>
+                        <option value="terminated">Terminated (History)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline"
+                        onclick="closeModal('medicationModal')">Cancel</button>
+                    <button type="submit" class="btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Update Allergy -->
+    <div id="allergyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="allergyModalTitle">Add Allergy</h3>
+                <button class="btn btn-sm btn-outline" onclick="closeModal('allergyModal')">&times;</button>
+            </div>
+            <form id="allergyForm">
+                <input type="hidden" id="allId">
+                <div class="form-group">
+                    <label>Allergen</label>
+                    <input type="text" id="allName" required placeholder="e.g. Peanuts">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="allType">
+                        <option value="drug">Drug</option>
+                        <option value="food">Food</option>
+                        <option value="environment">Environment</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Reaction</label>
+                    <input type="text" id="allReaction" placeholder="e.g. Skin rash">
+                </div>
+                <div class="form-group">
+                    <label>Severity</label>
+                    <select id="allSeverity">
+                        <option value="mild">Mild</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="severe">Severe</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="allStatus">
+                        <option value="active">Active</option>
+                        <option value="resolved">Resolved (History)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('allergyModal')">Cancel</button>
+                    <button type="submit" class="btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3 id="historyTitle">Medical History</h3>
+                <button class="btn btn-sm btn-outline" onclick="closeModal('historyModal')">&times;</button>
+            </div>
+            <div id="historyBody" style="max-height: 450px; overflow-y: auto;">
+                <!-- Filled dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('historyModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Data Layer Configuration -->
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipientId = urlParams.get('recipient_id');
+        const token = localStorage.getItem('token');
+
+        // State & Charts Configuration 
+        let profileData = {};
+        const charts = {};
+
+        // Redirect if auth missing
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        // Redirect if no recipient specified or recipient is literal "null" string
+        if (!recipientId || recipientId === 'null') {
+            console.warn('[Profile] Invalid recipientId:', recipientId);
+            window.location.href = 'dashboard.html';
+        }
+
+        // ============================================
+        //  UI HELPERS
+        // ============================================
+
+        function showError(msg) {
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('errorContainer').style.display = 'block';
+            document.getElementById('errorMessage').textContent = msg;
+        }
+
+        function severityClass(sev) {
+            if (!sev) return 'info';
+            sev = sev.toLowerCase();
+            return (sev === 'critical' || sev === 'severe') ? 'danger' :
+                (sev === 'high' || sev === 'moderate') ? 'warning' : 'success';
+        }
+
+        // ============================================
+        //  API DATA LOADER
+        // ============================================
+
+        async function fetchProfileData() {
+            try {
+                const response = await fetch(`${API_BASE}/care-recipients/${recipientId}/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Failed to fetch profile.');
+                }
+
+                profileData = await response.json();
+
+                // Hide loading, show dashboard
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('profileDashboard').style.display = 'grid';
+
+                // Process specific sections
+                loadRecipientOverview();
+                loadConditions();
+                loadMedications();
+                loadAllergies();
+                loadAlerts();
+                loadRecommendations();
+                // Render Visualizations
+                renderVitalCharts();
+                initLabCharts();
+
+            } catch (error) {
+                console.error(error);
+                showError(error.message);
+            }
+        }
+
+        // ============================================
+        //  MODULE RENDERING
+        // ============================================
+
+        // Section 1 & 10: Overview & AI Insights
+        function loadRecipientOverview() {
+            const el = document.getElementById('overviewGrid');
+            const info = profileData.general_info;
+
+            let riskHtml = `<div class="data-item col-span-12" style="background:#f8f9fa; padding:16px; border-radius:8px; margin-top:8px;">
+                                <div class="data-label">AI Risk Score Determinant</div>
+                                <div style="display:flex; align-items:center; gap: 16px;">
+                                    <div style="font-size:2rem; font-weight:800; color:${info.risk_score > 70 ? 'var(--danger)' : 'var(--warning)'}">${Math.round(info.risk_score || 0)}</div>
+                                    <div style="font-size:0.85rem; color:var(--text-muted);">
+                                        <strong>Risk Factors:</strong><br>
+                                        ${(Array.isArray(info.risk_factors) ? info.risk_factors : (info.risk_factors?.factors || [])).map(f => `${f.factor} (+${f.contribution})`).join(' · ') || 'No significant factors currently tracked.'}
+                                    </div>
+                                </div>
+                            </div>`;
+
+            let doctorRemarksHtml = info.doctor_remarks ? 
+                `<div class="data-item col-span-12" style="background:rgba(74, 144, 226, 0.05); padding:16px; border-radius:8px; margin-top:12px; border-left: 4px solid var(--accent);">
+                    <div class="data-label" style="color:var(--accent); font-weight:700;"><i class="fas fa-stethoscope"></i> Doctor's Clinical Remarks</div>
+                    <div style="font-size:0.95rem; color:var(--text-main); white-space:pre-wrap; line-height: 1.6; margin-top: 8px; font-style: italic;">"${info.doctor_remarks}"</div>
+                </div>` : '';
+
+            el.innerHTML = `
+                <div class="data-item"><div class="data-label">Name</div><div class="data-value">${info.name}</div></div>
+                <div class="data-item"><div class="data-label">Age & Gender</div><div class="data-value">${info.age} / ${info.gender || '—'}</div></div>
+                <div class="data-item"><div class="data-label">Blood Group</div><div class="data-value">${info.blood_group || '—'}</div></div>
+                <div class="data-item"><div class="data-label">Height & Weight</div><div class="data-value">${info.height ? info.height + 'cm' : '—'} / ${info.weight ? info.weight + 'kg' : '—'}</div></div>
+               
+                ${riskHtml}
+                ${doctorRemarksHtml}
+                <div class="data-item col-span-12" id="healthStateSummary" style="margin-top:12px; display:none;">
+                    <!-- Populated by loadRecommendations -->
+                </div>
+            `;
+        }
+
+        // Section 2: Conditions
+        function loadConditions() {
+            const el = document.getElementById('conditionsList');
+            const items = (profileData.conditions || []).filter(c => c.status !== 'resolved');
+            if (!items.length) { el.innerHTML = '<div class="empty-state">No active conditions recorded.</div>'; return; }
+
+            el.innerHTML = items.map(c => `
+                <div class="list-item" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="list-item-title">
+                            ${c.disease_name} <span class="badge ${severityClass(c.severity)}">${c.severity || 'Unknown'}</span>
+                        </div>
+                        <div class="list-item-meta">
+                            Status: ${c.status.replace('_', ' ')} • Since: ${new Date(c.start_date || c.first_detected).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="showEditModal('condition', ${c.id})"><i class="fas fa-edit"></i></button>
+                </div>
+            `).join('');
+        }
+
+        // Section 3: Medications
+        function loadMedications() {
+            const el = document.getElementById('medicationsList');
+            const all = profileData.medications || [];
+            const items = all.filter(m => m.status === 'active');
+            if (!items.length) { el.innerHTML = '<div class="empty-state">No active medications recorded.</div>'; return; }
+
+            el.innerHTML = items.map(m => {
+                const today = new Date();
+                const startDate = m.start_date ? new Date(m.start_date) : null;
+                const startLabel = startDate ? startDate.toLocaleDateString() : 'Today';
+
+                let endLabel = null, daysLeft = null;
+                if (m.end_date) {
+                    const ed = new Date(m.end_date);
+                    endLabel = ed.toLocaleDateString();
+                    daysLeft = Math.ceil((ed - today) / 86400000);
+                } else if (m.duration_days && startDate) {
+                    const ed = new Date(startDate);
+                    ed.setDate(ed.getDate() + m.duration_days);
+                    endLabel = ed.toLocaleDateString();
+                    daysLeft = Math.ceil((ed - today) / 86400000);
+                }
+
+                const isLifetime = !m.duration_days && !m.end_date;
+                const durationBadge = isLifetime
+                    ? `<span class="badge" style="background:#f0fdf4;color:#15803d;font-size:11px;">♾️ Lifetime</span>`
+                    : daysLeft !== null && daysLeft <= 3
+                        ? `<span class="badge" style="background:#fff3cd;color:#92400e;font-size:11px;">⚠️ ${daysLeft <= 0 ? 'Ends today' : daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left'}</span>`
+                        : `<span class="badge" style="background:#dbeafe;color:#1d4ed8;font-size:11px;">${m.duration_days}-day course</span>`;
+
+                const dateInfo = endLabel
+                    ? `📅 ${startLabel} → <strong>${endLabel}</strong>`
+                    : `📅 Started: ${startLabel}`;
+
+                // Stock Prediction info
+                let stockWarning = '';
+                if (m.current_stock !== undefined && m.doses_per_day) {
+                    const totalDays = Math.floor(m.current_stock / m.doses_per_day);
+                    const finishDate = new Date();
+                    finishDate.setDate(finishDate.getDate() + totalDays);
+
+                    const lowStock = totalDays <= 3;
+                    stockWarning = `<div style="margin-top:5px; font-size:11px; color:${lowStock ? '#ef4444' : '#64748b'}; font-weight:${lowStock ? '700' : '400'};">
+                        📦 Stock: ${m.current_stock} units (${totalDays} days left) 
+                        ${lowStock ? ' — <a href="order_medicines.html?recipient_id=' + recipientId + '" style="color:#4A90E2;text-decoration:underline;">Order Now</a>' : ''}
+                    </div>`;
+                }
+
+                return `
+                <div class="list-item" style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="flex:1;">
+                        <div class="list-item-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            ${m.medicine_name}
+                            <span class="badge info">${m.dosage || ''}</span>
+                            ${durationBadge}
+                        </div>
+                        <div class="list-item-meta" style="margin-top:4px;">
+                            🕐 ${m.frequency || 'As needed'}${m.schedule_time ? ' at <strong>' + m.schedule_time + '</strong>' : ''}
+                        </div>
+                        <div class="list-item-meta" style="margin-top:3px;font-size:12px;color:#64748b;">
+                            ${dateInfo}
+                        </div>
+                        ${stockWarning}
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="showEditModal('medication', ${m.id})"><i class="fas fa-edit"></i></button>
+                </div>
+            `}).join('');
+        }
+
+        // Section 4: Allergies
+        function loadAllergies() {
+            const el = document.getElementById('allergiesList');
+            const items = (profileData.allergies || []).filter(a => a.status !== 'resolved');
+            if (!items.length) { el.innerHTML = '<div class="empty-state">No known allergies.</div>'; return; }
+
+            el.innerHTML = items.map(a => `
+                <div class="list-item" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="list-item-title">
+                            ${a.allergen} <span class="badge ${severityClass(a.severity)}">${a.severity || 'Unknown'}</span>
+                        </div>
+                        <div class="list-item-meta">
+                            Type: ${a.allergy_type || a.type} • Reaction: ${a.reaction || '—'}
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="showEditModal('allergy', ${a.id})"><i class="fas fa-edit"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function timeAgo(dateString) {
+            if (!dateString) return 'Just now';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            // Format absolute time for comparison/display
+            const absTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            if (seconds < 60) return `Just now (${absTime})`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago (${absTime})`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago (${absTime})`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago (${absTime})`;
+        }
+
+        // Section: Actionable Recommendations
+        async function loadRecommendations() {
+            const el = document.getElementById('recommendationsList');
+            try {
+                const res = await fetch(`${API_BASE}/care-recipients/${recipientId}/recommendations`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Failed to fetch recommendations');
+                const data = await res.json();
+                const items = data.result || [];
+
+                // State of Health Logic (Architect Rule #11)
+                const healthEl = document.getElementById('healthStateSummary');
+                if (healthEl) {
+                    try {
+                        const hRes = await fetch(`${API_BASE}/care-recipients/${recipientId}/health-status`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (hRes.ok) {
+                            const hData = await hRes.json();
+                            const status = hData.result;
+                            healthEl.style.display = 'block';
+                            healthEl.innerHTML = `
+                                <div style="background:${status.color}10; border: 1px solid ${status.color}30; padding:16px; border-radius:12px; display:flex; align-items:center; gap:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                                    <div style="width:48px; height:48px; border-radius:12px; background:${status.color}; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow: 0 4px 10px ${status.color}40;">
+                                        <i class="fas ${status.icon}"></i>
+                                    </div>
+                                    <div style="flex:1;">
+                                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                            <strong style="font-size:1.1rem; color:var(--text);">${status.category}</strong>
+                                            <span style="font-size:0.75rem; background:rgba(0,0,0,0.05); padding:2px 8px; border-radius:10px; color:var(--text-muted);">Updated just now</span>
+                                        </div>
+                                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">
+                                            ${status.label} &bull; ${items.length ? `${items.length} actionable items found.` : 'Normal tracking.'}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    } catch (e) {
+                         console.error("Health status fetch failed:", e);
+                    }
+                }
+
+                if (!items.length) {
+                    el.innerHTML = '<div class="empty-state">No active recommendations.</div>';
+                    return;
+                }
+
+                const colors = { critical: '#fef2f2', high: '#fffbeb', medium: '#f0fdf4', suggestion: '#f8fafc', low: '#f8fafc' };
+                const borders = { critical: '#ef4444', high: '#f59e0b', medium: '#22c55e', suggestion: '#3b82f6', low: '#94a3b8' };
+                const iconColors = { critical: '#ef4444', high: '#f59e0b', medium: '#22c55e', suggestion: '#3b82f6', low: '#94a3b8' };
+                const icons = { critical: 'fa-exclamation-triangle', high: 'fa-bolt', medium: 'fa-info-circle', suggestion: 'fa-lightbulb', low: 'fa-info-circle' };
+
+                el.innerHTML = items.map(r => {
+                    const iconColors = { critical: '#ef4444', high: '#f59e0b', medium: '#22c55e', suggestion: '#3b82f6', low: '#94a3b8' };
+                    const icons = { critical: 'fa-exclamation-triangle', high: 'fa-bolt', medium: 'fa-info-circle', suggestion: 'fa-lightbulb', low: 'fa-info-circle' };
+                    const colors = { critical: '#fef2f2', high: '#fffbeb', medium: '#f0fdf4', suggestion: '#f8fafc', low: '#f8fafc' };
+                    const borders = { critical: '#ef4444', high: '#f59e0b', medium: '#22c55e', suggestion: '#3b82f6', low: '#94a3b8' };
+
+                    // Group actions by category
+                    const grouped = { doctor: [], lifestyle: [], tests: [] };
+                    (r.actions || []).forEach(a => {
+                        if (a.type === 'doctor_visit') grouped.doctor.push(a);
+                        else if (a.type === 'test') grouped.tests.push(a);
+                        else grouped.lifestyle.push(a);
+                    });
+
+                    const renderGroup = (list, title, gIcon) => {
+                        if (!list.length) return '';
+                        return `
+                            <div style="margin-top:8px;">
+                                <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:2px; display:flex; align-items:center; gap:4px;">
+                                    <i class="fas ${gIcon}"></i> ${title}
+                                </div>
+                                <ul style="list-style:none; padding:0; margin:0;">
+                                    ${list.map(a => {
+                                        let aIcon = 'fa-check';
+                                        if (a.type === 'doctor_visit') aIcon = 'fa-stethoscope';
+                                        else if (a.type === 'diet') aIcon = 'fa-apple-alt';
+                                        else if (a.type === 'lifestyle') aIcon = 'fa-running';
+                                        else if (a.type === 'test') aIcon = 'fa-vial';
+                                        else if (a.type === 'home_remedy') aIcon = 'fa-leaf';
+                                        return `<li style="margin-top:2px; font-size: 0.75rem; color: var(--text-main); display:flex; align-items:flex-start; gap:6px;">
+                                                    <i class="fas ${aIcon}" style="color:${iconColors[r.severity]}; margin-top:2px; width:14px;"></i> 
+                                                    <span>${a.text} ${a.evidence ? `<i class="fas fa-info-circle" style="font-size:0.6rem; opacity:0.5;" title="Evidence: ${a.evidence}"></i>` : ''}</span>
+                                                </li>`;
+                                    }).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    };
+
+                    return `
+                        <div class="list-item" style="border-left: 4px solid ${borders[r.severity]}; background: ${colors[r.severity]}50; padding: 16px; margin-bottom: 12px; border-radius: 12px; position: relative;">
+                            <div style="position: absolute; top: 12px; right: 12px; font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">
+                                <i class="fas fa-clock" style="font-size: 0.8em;"></i> ${timeAgo(r.created_at)}
+                            </div>
+                            <div style="display:flex; gap:12px; align-items:flex-start;">
+                                <div style="width:32px; height:32px; border-radius:8px; background:${borders[r.severity]}; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="fas ${icons[r.severity]}"></i>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-weight:600; font-size:0.95rem; color:var(--text);">${r.metric} Insight</div>
+                                    <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px; line-height:1.4;">${r.message}</div>
+                                    
+                                    ${renderGroup(grouped.doctor, 'Clinical Action', 'fa-stethoscope')}
+                                    ${renderGroup(grouped.tests, 'Follow-up Diagnostics', 'fa-vial')}
+                                    ${renderGroup(grouped.lifestyle, 'Lifestyle & Management', 'fa-running')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error(err);
+                el.innerHTML = '<div class="empty-state">Unable to load recommendations.</div>';
+            }
+        }
+
+        async function refreshRecommendations() {
+            const btn = document.getElementById('btnRefreshRecs');
+            const el = document.getElementById('recommendationsList');
+            if (!btn) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            el.innerHTML = '<div class="empty-state"><i class="fas fa-brain fa-pulse"></i> AI is reviewing recent vitals and audio events...</div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/care-recipients/${recipientId}/recommendations/refresh`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error('Refresher failed');
+                
+                // Reload list
+                await loadRecommendations();
+            } catch (err) {
+                console.error(err);
+                alert('Analysis failed. Please check backend connection.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            }
+        }
+
+        // ============================================
+        //  MODAL LOGIC
+        // ============================================
+
+        function showAddModal(type) {
+            if (type === 'condition') {
+                document.getElementById('conditionModalTitle').innerText = 'Add Medical Condition';
+                document.getElementById('conditionForm').reset();
+                document.getElementById('condId').value = '';
+                document.getElementById('conditionModal').style.display = 'flex';
+            } else if (type === 'medication') {
+                document.getElementById('medicationModalTitle').innerText = 'Add Medication';
+                document.getElementById('medicationForm').reset();
+                document.getElementById('medicationId').value = '';
+                document.getElementById('medStock').value = 0;
+                document.getElementById('medDosesPerDay').value = 1;
+                // Default start date to today
+                document.getElementById('medStartDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('medLifetime').checked = false;
+                document.getElementById('medDuration').disabled = false;
+                document.getElementById('medicationModal').style.display = 'flex';
+            } else if (type === 'allergy') {
+                document.getElementById('allergyModalTitle').innerText = 'Add Allergy';
+                document.getElementById('allergyForm').reset();
+                document.getElementById('allId').value = '';
+                document.getElementById('allergyModal').style.display = 'flex';
+            }
+        }
+
+        function showEditModal(type, id) {
+            if (type === 'condition') {
+                const item = (profileData.conditions || []).find(c => c.id == id);
+                if (!item) return;
+                document.getElementById('conditionModalTitle').innerText = 'Update Condition';
+                document.getElementById('condId').value = item.id;
+                document.getElementById('condName').value = item.disease_name;
+                document.getElementById('condSeverity').value = (item.severity || 'moderate').toLowerCase();
+                document.getElementById('condStatus').value = item.status || 'active';
+                document.getElementById('conditionModal').style.display = 'flex';
+            } else if (type === 'medication') {
+                const item = (profileData.medications || []).find(m => m.id == id);
+                if (!item) return;
+                document.getElementById('medicationModalTitle').innerText = 'Update Medication';
+                document.getElementById('medicationId').value = item.id;
+                document.getElementById('medName').value = item.medicine_name;
+                document.getElementById('medDosage').value = item.dosage || '';
+                document.getElementById('medFrequency').value = item.frequency || '';
+                document.getElementById('medSchedule').value = item.schedule_time || '';
+                document.getElementById('medStartDate').value = item.start_date || '';
+                const isLifetime = !item.duration_days && !item.end_date;
+                document.getElementById('medLifetime').checked = isLifetime;
+                document.getElementById('medDuration').value = item.duration_days || '';
+                document.getElementById('medDuration').disabled = isLifetime;
+                document.getElementById('medStock').value = item.current_stock || 0;
+                document.getElementById('medDosesPerDay').value = item.doses_per_day || 1;
+                document.getElementById('medStatus').value = item.status || 'active';
+                document.getElementById('medicationModal').style.display = 'flex';
+            } else if (type === 'allergy') {
+                const item = (profileData.allergies || []).find(a => a.id == id);
+                if (!item) return;
+                document.getElementById('allergyModalTitle').innerText = 'Update Allergy';
+                document.getElementById('allId').value = item.id;
+                document.getElementById('allName').value = item.allergen;
+                document.getElementById('allType').value = item.type || 'other';
+                document.getElementById('allReaction').value = item.reaction || '';
+                document.getElementById('allSeverity').value = (item.severity || 'moderate').toLowerCase();
+                document.getElementById('allStatus').value = item.status || 'active';
+                document.getElementById('allergyModal').style.display = 'flex';
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Form Submit Handlers
+        document.getElementById('conditionForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('condId').value;
+            const data = {
+                disease_name: document.getElementById('condName').value,
+                severity: document.getElementById('condSeverity').value,
+                status: document.getElementById('condStatus').value
+            };
+            const method = id ? 'PATCH' : 'POST';
+            const url = id ? `${API_BASE}/care-recipients/${recipientId}/conditions/${id}` : `${API_BASE}/care-recipients/${recipientId}/conditions`;
+
+            await handleManagementSubmit(url, method, data, 'conditionModal');
+        };
+
+        document.getElementById('medicationForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('medicationId').value;
+            const isLifetime = document.getElementById('medLifetime').checked;
+            const durationVal = document.getElementById('medDuration').value;
+            const startVal = document.getElementById('medStartDate').value;
+            const data = {
+                medicine_name: document.getElementById('medName').value,
+                dosage: document.getElementById('medDosage').value,
+                frequency: document.getElementById('medFrequency').value,
+                schedule_time: document.getElementById('medSchedule').value,
+                duration_days: isLifetime ? null : (durationVal ? parseInt(durationVal) : null),
+                start_date: startVal || null,
+                status: document.getElementById('medStatus').value,
+                current_stock: parseInt(document.getElementById('medStock').value || 0),
+                doses_per_day: parseInt(document.getElementById('medDosesPerDay').value || 1)
+            };
+            const method = id ? 'PATCH' : 'POST';
+            const url = id
+                ? `${API_BASE}/care-recipients/${recipientId}/medications/${id}`
+                : `${API_BASE}/care-recipients/${recipientId}/medications`;
+            await handleManagementSubmit(url, method, data, 'medicationModal');
+        };
+
+        document.getElementById('allergyForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('allId').value;
+            const data = {
+                allergen: document.getElementById('allName').value,
+                allergy_type: document.getElementById('allType').value,
+                reaction: document.getElementById('allReaction').value,
+                severity: document.getElementById('allSeverity').value,
+                status: document.getElementById('allStatus').value
+            };
+            const method = id ? 'PATCH' : 'POST';
+            const url = id ? `${API_BASE}/care-recipients/${recipientId}/allergies/${id}` : `${API_BASE}/care-recipients/${recipientId}/allergies`;
+
+            await handleManagementSubmit(url, method, data, 'allergyModal');
+        };
+
+        async function handleManagementSubmit(url, method, data, modalId) {
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.detail || 'Action failed');
+                }
+                closeModal(modalId);
+                fetchProfileData(); // Reload all
+            } catch (err) {
+                console.error('Management Error:', err);
+                alert('Management Error: ' + err.message);
+            }
+        }
+
+        // ============================================
+        //  HISTORY LOGIC
+        // ============================================
+
+        function showHistory(type) {
+            const el = document.getElementById('historyBody');
+            const title = document.getElementById('historyTitle');
+            let html = '';
+
+            if (type === 'conditions') {
+                title.innerText = 'Conditions History';
+                const items = (profileData.conditions || []).filter(c => c.status === 'resolved');
+                html = items.length ? items.map(c => `
+                    <div class="list-item">
+                        <div class="list-item-title">${c.disease_name} <span class="badge success">Resolved</span></div>
+                        <div class="list-item-meta">Resolved on: ${new Date(c.resolved_date || c.last_updated).toLocaleDateString()}</div>
+                    </div>
+                `).join('') : '<div class="empty-state">No resolved conditions found.</div>';
+            } else if (type === 'medications') {
+                title.innerText = 'Medications History';
+                const items = (profileData.medications || []).filter(m => m.status !== 'active');
+                html = items.length ? items.map(m => `
+                    <div class="list-item">
+                        <div class="list-item-title">${m.medicine_name} <span class="badge ${m.status === 'completed' ? 'success' : 'danger'}">${m.status}</span></div>
+                        <div class="list-item-meta">Ended on: ${new Date(m.end_date || m.last_updated || Date.now()).toLocaleDateString()}</div>
+                    </div>
+                `).join('') : '<div class="empty-state">No past medications found.</div>';
+            } else if (type === 'allergies') {
+                title.innerText = 'Allergies History';
+                const items = (profileData.allergies || []).filter(a => a.status === 'resolved');
+                html = items.length ? items.map(a => `
+                    <div class="list-item">
+                        <div class="list-item-title">${a.allergen} <span class="badge success">Resolved</span></div>
+                        <div class="list-item-meta">Resolved on: ${new Date(a.resolved_date || a.last_updated || Date.now()).toLocaleDateString()}</div>
+                    </div>
+                `).join('') : '<div class="empty-state">No resolved allergies found.</div>';
+            }
+
+            el.innerHTML = html;
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+
+
+        // Section 9: Alerts
+        function loadAlerts() {
+            const el = document.getElementById('alertsList');
+            const items = profileData.alerts || [];
+            if (!items.length) { el.innerHTML = '<div class="empty-state">No recent clinical alerts.</div>'; return; }
+
+            el.innerHTML = items.map(a => {
+                const msg = a.message || '';
+                const testMatch = msg.match(/(?:ordered|prescribed|new) lab test:?\s*([^.]+)/i);
+                let bookingBtn = '';
+                
+                if (testMatch) {
+                    const testName = testMatch[1].trim();
+                    // Direct search URL on Lal PathLabs as per user preference
+                    const bookingURL = `https://www.lalpathlabs.com/book-a-test/delhi?search=${encodeURIComponent(testName.toLowerCase())}`;
+                    bookingBtn = `
+                    <div style="margin-top:10px;">
+                        <a href="${bookingURL}" target="_blank" class="btn btn-sm" 
+                            style="background:#f15a22; color:white; border:none; font-weight:600; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px;">
+                            <i class="fas fa-flask"></i> Book ${testName} with Lal PathLabs
+                        </a>
+                    </div>`;
+                }
+
+                return `
+                <div class="alert-item ${a.severity ? a.severity.toLowerCase() : ''}">
+                    <div style="font-weight:600; font-size:0.9rem; margin-bottom:4px;">${(a.severity || 'Alert').toUpperCase()}</div>
+                    <div style="font-size:0.85rem;">${msg}</div>
+                    ${bookingBtn}
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;">${new Date(a.created_at).toLocaleString()}</div>
+                </div>
+            `}).join('');
+        }
+
+        // ============================================
+        //  CHARTING LOGIC (Chart.js)
+        // ============================================
+
+        // Section 7: Vital Signs
+        function renderVitalCharts() {
+            let vitals = profileData.vitals || [];
+            if (!vitals.length) return;
+
+            // Ensure chronological order for trend display
+            vitals = [...vitals].sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at));
+
+            const labels = vitals.map(v => {
+                const d = new Date(v.recorded_at);
+                return d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            });
+
+            const ctx = document.getElementById('vitalChart').getContext('2d');
+            if (charts.vitals) charts.vitals.destroy();
+
+            charts.vitals = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Heart Rate (bpm)',
+                            data: vitals.map(v => v.heart_rate),
+                            borderColor: '#e53e3e',
+                            backgroundColor: '#e53e3e20',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Body Temp (°F)',
+                            data: vitals.map(v => v.temperature),
+                            borderColor: '#38a169',
+                            backgroundColor: '#38a16920',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Sleep Score',
+                            data: vitals.map(v => v.sleep_score),
+                            borderColor: '#805ad5',
+                            backgroundColor: '#805ad520',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'SpO2 (%)',
+                            data: vitals.map(v => v.oxygen_saturation),
+                            borderColor: '#3182ce',
+                            backgroundColor: '#3182ce20',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Value' }
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+        // Section 6: Lab Values Trends
+        function initLabCharts() {
+            const labs = profileData.lab_values || [];
+            const chartContainer = document.getElementById('labChart').parentElement;
+
+            // Group labs by test_name, sorted by date within each group
+            const grouped = {};
+            labs.forEach(l => {
+                if (!grouped[l.test_name]) grouped[l.test_name] = [];
+                grouped[l.test_name].push(l);
+            });
+            // Sort each group chronologically
+            Object.values(grouped).forEach(arr => arr.sort((a, b) => new Date(a.test_date) - new Date(b.test_date)));
+
+            const keys = Object.keys(grouped).sort();
+
+            // Always read the live element — NEVER capture it in a closure
+            const getLiveSelect = () => document.getElementById('labMetricSelect');
+
+            // Handle empty state — restore canvas if previously replaced
+            if (!keys.length) {
+                chartContainer.innerHTML = '<div class="empty-state">No tracked lab results available for visualization.</div>';
+                const sel = getLiveSelect();
+                if (sel) sel.style.display = 'none';
+                return;
+            }
+
+            // Ensure canvas exists (may have been replaced by empty-state div)
+            if (!document.getElementById('labChart')) {
+                chartContainer.innerHTML = '<canvas id="labChart"></canvas>';
+            }
+
+            // Populate dropdown — preserve previous selection if still valid
+            const sel = getLiveSelect();
+            if (!sel) return;
+            sel.style.display = '';
+            const prevSelection = sel.value;
+            sel.innerHTML = keys.map(k => `<option value="${k}"${k === prevSelection ? ' selected' : ''}>${k}</option>`).join('');
+            if (!grouped[sel.value]) sel.value = keys[0];
+
+            // drawLabTrend always reads from the LIVE dropdown element
+            const drawLabTrend = () => {
+                const liveSelect = document.getElementById('labMetricSelect');
+                if (!liveSelect) return;
+                const metric = liveSelect.value;
+                const dataPoints = grouped[metric];
+                if (!dataPoints || !dataPoints.length) return;
+
+                const labels = dataPoints.map(d => new Date(d.test_date).toLocaleDateString());
+                const values = dataPoints.map(d => d.test_value);
+                const colors = dataPoints.map(d => d.is_abnormal ? '#e53e3e' : '#3182ce');
+
+                // Build datasets array
+                const datasets = [{
+                    label: metric + (dataPoints[0].test_unit ? ` (${dataPoints[0].test_unit})` : ''),
+                    data: values,
+                    borderColor: '#3182ce',
+                    backgroundColor: 'rgba(49,130,206,0.08)',
+                    pointBackgroundColor: colors,
+                    pointBorderColor: colors,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2
+                }];
+
+                // Add reference range bands if available
+                const refLow = dataPoints[0].reference_low;
+                const refHigh = dataPoints[0].reference_high;
+                if (refHigh != null) {
+                    datasets.push({
+                        label: 'Upper Limit',
+                        data: labels.map(() => refHigh),
+                        borderColor: 'rgba(229, 62, 62, 0.4)',
+                        borderDash: [6, 4],
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false
+                    });
+                }
+                if (refLow != null) {
+                    datasets.push({
+                        label: 'Lower Limit',
+                        data: labels.map(() => refLow),
+                        borderColor: 'rgba(56, 161, 105, 0.4)',
+                        borderDash: [6, 4],
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false
+                    });
+                }
+
+                const canvas = document.getElementById('labChart');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                if (charts.labs) charts.labs.destroy();
+
+                charts.labs = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { boxWidth: 10, font: { size: 11 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: function (ctx) {
+                                        if (ctx.datasetIndex === 0) {
+                                            const pt = dataPoints[ctx.dataIndex];
+                                            let extra = [];
+                                            if (pt.is_abnormal) extra.push('⚠ Abnormal');
+                                            if (refLow != null && refHigh != null)
+                                                extra.push(`Normal: ${refLow} – ${refHigh}`);
+                                            return extra.join('\n');
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { ticks: { maxRotation: 45, font: { size: 10 } } },
+                            y: {
+                                beginAtZero: false,
+                                title: { display: true, text: dataPoints[0].test_unit || 'Value' }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Remove old listener by replacing the handler reference, then re-add on the LIVE element
+            // We store the handler on the element itself to enable clean removal
+            if (sel._labTrendHandler) {
+                sel.removeEventListener('change', sel._labTrendHandler);
+            }
+            sel._labTrendHandler = drawLabTrend;
+            sel.addEventListener('change', drawLabTrend);
+            drawLabTrend(); // Draw initially
+        }
+
+
+        // ============================================
+        //  TRIGGER BOOTSTRAP
+        // ============================================
+        fetchProfileData();
+
+        // ============================================
+        //  IN-PAGE MEDICATION REMINDERS
+        // ============================================
+        function checkInPageMedReminders() {
+            const meds = (profileData.medications || []).filter(m => m.status === 'active' && m.schedule_time);
+            if (!meds.length) return;
+
+            const now = new Date();
+            const currentHHMM = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            const todayKey = now.toISOString().split('T')[0];
+
+            const dueMeds = [];
+            meds.forEach(m => {
+                const slots = m.schedule_time.split(',').map(s => {
+                    const parts = s.trim().split(':');
+                    return String(parseInt(parts[0])).padStart(2, '0') + ':' + String(parseInt(parts[1] || 0)).padStart(2, '0');
+                });
+                slots.forEach(slot => {
+                    const key = `medreminder_${m.medication_id}_${todayKey}_${slot}`;
+                    if (slot === currentHHMM && !sessionStorage.getItem(key)) {
+                        dueMeds.push({ name: m.medicine_name, dosage: m.dosage, slot });
+                        sessionStorage.setItem(key, '1');
+                    }
+                });
+            });
+
+            if (dueMeds.length) {
+                const lines = dueMeds.map(d => `<strong>${d.name}</strong>${d.dosage ? ' ' + d.dosage : ''} at ${d.slot}`).join('<br>');
+                document.getElementById('medReminderToastBody').innerHTML = `Time to take your medicine:<br>${lines}`;
+                const toast = document.getElementById('medReminderToast');
+                toast.style.display = 'block';
+                // Auto-dismiss after 30 seconds
+                setTimeout(() => { if (toast.style.display !== 'none') toast.style.display = 'none'; }, 30000);
+            }
+        }
+
+        // Check after data loads and then every 60 seconds
+        setTimeout(checkInPageMedReminders, 5000);
+        setInterval(checkInPageMedReminders, 60000);
+
+
+    </script>
+</body>
+
+</html>

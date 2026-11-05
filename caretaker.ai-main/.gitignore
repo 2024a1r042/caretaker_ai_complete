@@ -1,0 +1,50 @@
+# Claude Code (AI assistant — never commit)
+.claude/
+*.claude
+CLAUDE.md
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Dataset
+dataset/
+data/
+*.zip
+*.mp4
+*.csv
+
+# Logs
+*.log
+
+# Env
+.env
+
+# Media
+*.avi
+*.mp4
+*.wav
+*.mp3
+
+# Uploads
+uploads/
+backend/temp_uploads/
+backend/output_videos/
+backend/fall_video/
+
+# Model weights
+frontend/model/
+*.bin
+
+*.h5
+*.pt
+models/
+weights/
+
+# Google Cloud Credentials
+google_creds.json

@@ -1,0 +1,7 @@
+# Only needed if you add trained cough/sneeze CRNN weights at
+# backend/utils/audio_model/weights.weights.h5 (they are not in the repo).
+# The backend then runs TensorFlow in a separate helper process — never in the
+# API server process, where it crashes alongside PyTorch/YOLO.
+tensorflow
+# Not used anywhere in the app (removed from the main requirements):
+# tensorflow-hub, deepface, pandas, joblib

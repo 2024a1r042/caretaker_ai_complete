@@ -1,0 +1,29 @@
+import os
+import sys
+from sqlalchemy.orm import Session
+import datetime
+
+sys.path.append(os.path.join(os.getcwd()))
+
+from config import SessionLocal
+from services.insights_engine import run_recommendation_pipeline
+
+def test_refresh():
+    db = SessionLocal()
+    try:
+        print("Triggering v3 recommendation pipeline for recipient 51...")
+        recs = run_recommendation_pipeline(51, db)
+        print(f"Generated {len(recs)} new recommendations.")
+        for r in recs:
+            print(f"--- NEW REC: {r.id} ---")
+            print(f"Title: {r.title}")
+            print(f"Group: {r.condition_group}")
+            print(f"Do This Now: {r.do_this_now}")
+            print(f"Actions: {r.today_actions}")
+            print(f"Time Window: {r.time_window}")
+            print("-" * 20)
+    finally:
+        db.close()
+
+if __name__ == "__main__":
+    test_refresh()

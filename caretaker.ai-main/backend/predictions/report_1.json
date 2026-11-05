@@ -1,0 +1,18 @@
+[
+  {
+    "metric": "glucose_fasting",
+    "value": 118.62
+  },
+  {
+    "metric": "hba1c",
+    "value": 6.19
+  },
+  {
+    "metric": "hdl_cholesterol",
+    "value": 56.69
+  },
+  {
+    "metric": "vitamin_d",
+    "value": 55.22
+  }
+]

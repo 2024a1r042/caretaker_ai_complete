@@ -1,0 +1,22 @@
+[
+  {
+    "metric": "Creatinine",
+    "value": 0.95
+  },
+  {
+    "metric": "HbA1c",
+    "value": 6.29
+  },
+  {
+    "metric": "HDL",
+    "value": 46.43
+  },
+  {
+    "metric": "LDL",
+    "value": 100.75
+  },
+  {
+    "metric": "Vitamin D",
+    "value": 21.6885
+  }
+]

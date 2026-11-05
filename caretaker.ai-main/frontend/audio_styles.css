@@ -1,0 +1,239 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Real-Time Audio Classifier — Light Pastel Theme
+   Matching CareTaker & Video Monitoring
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* Merged Variables */
+    --bg-glass: rgba(255, 255, 255, 0.65);
+    --border: rgba(74, 144, 226, 0.2);
+    --border-hover: rgba(74, 144, 226, 0.4);
+
+    --text-primary: #1A202C;
+    --text-secondary: #4A5568;
+    --text-dim: #718096;
+
+    --accent: #4A90E2;
+    --accent-light: #6BB5FF;
+    --red: #fb7185;
+    --red-light: rgba(251, 113, 133, 0.15);
+    --amber: #f6c23e;
+    --amber-light: rgba(246, 194, 62, 0.15);
+    --green: #34d399;
+    --green-light: rgba(52, 211, 153, 0.15);
+
+    --radius: 20px;
+    --radius-sm: 12px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.08);
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Custom Component Styles (scoped to avoid bootstrap conflicts) ── */
+
+/* Glass Card Override/Extension */
+.glass-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(24px);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    margin-bottom: 20px;
+}
+
+.glass-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-hover);
+}
+
+.glass-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.glass-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-secondary);
+}
+
+/* Visualizer Canvas Wrapper */
+.canvas-wrap {
+    width: 100%;
+    height: 160px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.canvas-wrap canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.vis-label {
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    pointer-events: none;
+}
+
+/* Prediction Card */
+.prediction-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 28px;
+}
+
+.pred-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.5);
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.pred-icon.cough { background: var(--red-light); border-color: var(--red); }
+.pred-icon.sneeze { background: var(--amber-light); border-color: var(--amber); }
+.pred-icon.talking { background: rgba(74, 144, 226, 0.1); border-color: var(--accent); }
+.pred-icon.noise { background: rgba(255, 255, 255, 0.5); }
+
+.pred-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    transition: var(--transition);
+}
+
+.pred-label.cough { color: var(--red); }
+.pred-label.sneeze { color: var(--amber); }
+.pred-label.talking { color: var(--accent); }
+.pred-label.noise { color: var(--text-secondary); }
+
+.pred-conf {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Confidence Bars */
+.bars-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Stacked on small, grid on large handled by col class */
+    gap: 15px;
+    padding: 20px 24px;
+}
+
+.bar-item label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.bar-track {
+    height: 10px;
+    border-radius: 100px;
+    background: rgba(74, 144, 226, 0.1);
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    width: 0%;
+    transition: width 0.4s ease;
+}
+
+.bar-fill.bar-cough { background: linear-gradient(90deg, var(--red), #f472b6); }
+.bar-fill.bar-sneeze { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+.bar-fill.bar-talking { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+.bar-fill.bar-noise { background: linear-gradient(90deg, var(--text-dim), #94a3b8); }
+
+/* Status Dot Animation */
+.status-dot-large {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: var(--transition);
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.status-dot-large.live {
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+}
+
+/* Alert List */
+.alert-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.alert-entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.alert-entry.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.alert-entry.cough { border-color: var(--red); background: var(--red-light); }
+.alert-entry.sneeze { border-color: var(--amber); background: var(--amber-light); }
+
+.alert-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.tag-cough { background: var(--red); color: white; }
+.tag-sneeze { background: var(--amber); color: white; }

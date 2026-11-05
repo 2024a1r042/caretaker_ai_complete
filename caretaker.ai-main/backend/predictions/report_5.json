@@ -1,0 +1,22 @@
+[
+  {
+    "metric": "Fasting Glucose",
+    "value": 106.67
+  },
+  {
+    "metric": "HbA1c",
+    "value": 7.28
+  },
+  {
+    "metric": "HDL",
+    "value": 40.77
+  },
+  {
+    "metric": "LDL",
+    "value": 115.87
+  },
+  {
+    "metric": "Vitamin D",
+    "value": 36.9193
+  }
+]

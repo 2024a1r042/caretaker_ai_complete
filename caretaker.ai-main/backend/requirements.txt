@@ -1,0 +1,46 @@
+# CareTaker.ai backend — Python 3.10 / 3.11 recommended (tested on 3.11)
+# Windows: run ..\setup_windows.ps1, which installs these into backend\venv.
+# Exact versions that were tested end-to-end: requirements-windows-py311.lock.txt
+
+# web / API
+fastapi>=0.110
+uvicorn
+python-multipart
+python-socketio
+websockets
+pydantic[email]>=2.5
+python-jose[cryptography]
+python-dotenv
+requests
+fastapi-mail>=1.4
+sqlalchemy
+psycopg2-binary
+
+# AI: Saathi (Gemini) + voice
+google-generativeai
+google-cloud-texttospeech
+
+# fall detection (YOLOv8-pose + BiGRU)
+torch
+ultralytics
+imageio-ffmpeg        # bundled ffmpeg so analysed videos play in the browser without installing ffmpeg
+numpy
+
+# audio (cough / sneeze acoustic analyzer)
+librosa
+soundfile
+
+# medical reports
+PyPDF2
+pdfplumber
+pdf2image
+python-docx
+pillow
+pytesseract
+rapidfuzz
+faiss-cpu
+fpdf2
+
+# tests
+pytest
+httpx

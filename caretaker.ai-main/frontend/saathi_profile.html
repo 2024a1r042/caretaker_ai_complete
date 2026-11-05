@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="js/auth-guard.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personalise Saathi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F3F6F2;
+    --sheet: #FFFFFF;
+    --ink: #1F2A4D;
+    --ink-soft: #55607F;
+    --rule: #D9E0D8;
+    --sage: #5F7F69;
+    --marigold: #E39B2D;
+    --marigold-soft: #FBEBD0;
+    --danger: #B4342D;
+    --radius-lg: 18px;
+    --radius-sm: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #151A26; --sheet: #1D2433; --ink: #E9ECF5; --ink-soft: #A3ACC4;
+      --rule: #313A4F; --sage: #8FB29A; --marigold: #F0B04F; --marigold-soft: #3A2F1C; --danger: #F07A72;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #151A26; --sheet: #1D2433; --ink: #E9ECF5; --ink-soft: #A3ACC4;
+    --rule: #313A4F; --sage: #8FB29A; --marigold: #F0B04F; --marigold-soft: #3A2F1C; --danger: #F07A72;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Mukta', system-ui, sans-serif;
+         font-size: 17px; line-height: 1.55; }
+  a { color: var(--ink); }
+  :focus-visible { outline: 3px solid var(--marigold); outline-offset: 2px; }
+
+  .top { max-width: 1180px; margin: 0 auto; padding: 22px 20px 6px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .top a.back { text-decoration: none; color: var(--ink-soft); font-weight: 500; }
+  .top h1 { margin: 0; font-size: 2.1rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; flex: 1 1 320px; }
+  .top p.lede { margin: 2px 0 0; color: var(--ink-soft); max-width: 62ch; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 14px 20px 80px; display: grid;
+          grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; align-items: start; }
+  @media (max-width: 960px) { .wrap { grid-template-columns: 1fr; } .notebook { position: static !important; } }
+
+  section.block { background: var(--sheet); border-radius: var(--radius-lg); padding: 22px 22px 18px; margin-bottom: 18px;
+                  border: 1px solid var(--rule); }
+  section.block h2 { margin: 0 0 2px; font-size: 1.3rem; font-weight: 700; }
+  section.block > p.hint { margin: 0 0 14px; color: var(--ink-soft); font-size: 0.95rem; max-width: 64ch; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+  @media (max-width: 620px) { .grid2 { grid-template-columns: 1fr; } }
+  label.f { display: block; font-weight: 600; font-size: 0.95rem; }
+  label.f span.sub { display: block; font-weight: 400; color: var(--ink-soft); font-size: 0.85rem; }
+  input::placeholder, textarea::placeholder { color: var(--ink-soft); opacity: .7; font-style: italic; }
+  input[type=text], input[type=time], select, textarea {
+    width: 100%; margin-top: 4px; font: inherit; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 9px 11px; }
+  textarea { min-height: 70px; resize: vertical; }
+
+  /* chip lists: the things they love */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .chip { background: var(--marigold-soft); border-radius: 999px; padding: 4px 6px 4px 14px; display: inline-flex; align-items: center; gap: 6px; }
+  .chip button { border: 0; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 2px 6px; border-radius: 999px; }
+  .chip-add { display: flex; gap: 8px; margin-top: 8px; }
+  .chip-add input { margin-top: 0; }
+
+  .rows .row { display: grid; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .rows.family .row { grid-template-columns: 1.1fr 1fr 1fr 1.6fr auto auto; }
+  .rows.routine .row { grid-template-columns: 150px 1fr auto auto; }
+  .rows.dates .row { grid-template-columns: 1.6fr 150px auto; }
+  .rows .row input { margin-top: 0; }
+  @media (max-width: 760px) { .rows.family .row { grid-template-columns: 1fr 1fr; } }
+  .small { font-size: 0.85rem; color: var(--ink-soft); display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; }
+
+  button.btn { font: inherit; font-weight: 600; border-radius: var(--radius-sm); padding: 9px 16px; cursor: pointer;
+               border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); }
+  button.btn.primary { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+  button.icon { border: 0; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 1.2rem; padding: 4px 8px; border-radius: 8px; }
+  button.icon:hover { color: var(--danger); }
+
+  .savebar { position: sticky; bottom: 0; background: color-mix(in srgb, var(--paper) 88%, transparent);
+             backdrop-filter: blur(6px); padding: 12px 0; display: flex; gap: 12px; align-items: center; }
+  #saveStatus { color: var(--ink-soft); }
+
+  /* the notebook — the one bold element */
+  .notebook { position: sticky; top: 16px; background: var(--ink); color: #F4F1E6; border-radius: var(--radius-lg);
+              padding: 22px 22px 20px; box-shadow: 0 18px 40px -22px rgba(31,42,77,.7); }
+  :root[data-theme="dark"] .notebook { background: #0E1320; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .notebook { background: #0E1320; } }
+  .notebook h2 { margin: 0; font-size: 1.35rem; font-weight: 800; }
+  .notebook .who { font-size: 2rem; font-weight: 800; color: var(--marigold); line-height: 1.1; margin: 10px 0 4px; }
+  .notebook .next { margin: 16px 0; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.07);
+                    border-left: 4px solid var(--marigold); }
+  .notebook .next b { display: block; font-size: 0.9rem; color: #C8CCE0; font-weight: 600; }
+  .notebook pre { white-space: pre-wrap; font-family: inherit; font-size: 0.92rem; line-height: 1.5; color: #DCDFEC;
+                  margin: 0; max-height: 46vh; overflow: auto; }
+  .notebook details summary { cursor: pointer; color: #C8CCE0; margin-bottom: 8px; }
+
+  /* learned memories */
+  .mem { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px 0; border-top: 1px solid var(--rule); }
+  .mem:first-child { border-top: 0; }
+  .mem .meta { color: var(--ink-soft); font-size: 0.85rem; }
+  .mem .cat { display: inline-block; background: var(--paper); border: 1px solid var(--rule); border-radius: 999px;
+              padding: 0 10px; margin-right: 6px; font-size: 0.8rem; }
+  .empty { color: var(--ink-soft); padding: 8px 0; }
+  .err { color: var(--danger); }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="voice_bot.html">← Back to Saathi</a>
+  <div style="flex-basis:100%"></div>
+  <div>
+    <h1 id="title">Tell Saathi about them</h1>
+    <p class="lede">The more Saathi knows — what they love to eat, which bhajans they hum, who they miss — the more it sounds like family. You can change anything here at any time.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div>
+    <section class="block">
+      <h2>How to talk with them</h2>
+      <p class="hint">What Saathi calls them and how it should speak.</p>
+      <div class="grid2">
+        <label class="f">Call them<span class="sub">e.g. Amma, Dadi, Sharma ji</span><input type="text" id="preferred_name"></label>
+        <label class="f">Language
+          <select id="language_preference"><option value="hi">Hindi</option><option value="hinglish">Hinglish</option><option value="en">English</option></select>
+        </label>
+        <label class="f">Mother tongue<input type="text" id="native_language" placeholder="Dogri, Punjabi…"></label>
+        <label class="f">Hometown<input type="text" id="hometown"></label>
+        <label class="f">What they used to do<input type="text" id="former_occupation" placeholder="School teacher for 30 years"></label>
+        <label class="f">Faith and daily practice<input type="text" id="faith" placeholder="Morning aarti, Krishna bhakt"></label>
+        <label class="f">Wakes up<input type="time" id="wake_time"></label>
+        <label class="f">Goes to sleep<input type="time" id="sleep_time"></label>
+      </div>
+      <label class="f" style="margin-top:12px">Conversation style<span class="sub">Hard of hearing? Loves jokes? Gets tired quickly?</span>
+        <textarea id="conversation_style"></textarea></label>
+    </section>
+
+    <section class="block">
+      <h2>What they love</h2>
+      <p class="hint">Saathi offers their own favourites first — their bhajan, not a random playlist.</p>
+      <div id="chip-sections"></div>
+      <label class="f" style="margin-top:12px">Diet notes<span class="sub">So food suggestions stay safe</span>
+        <input type="text" id="dietary_notes" placeholder="Diabetic — chai without sugar"></label>
+    </section>
+
+    <section class="block">
+      <h2>Family and friends</h2>
+      <p class="hint">Saathi brings them up warmly, and after a fall it tells them it is calling the person you mark as first contact.</p>
+      <div class="rows family" id="family"></div>
+      <button class="btn" type="button" onclick="addFamily()">Add a person</button>
+    </section>
+
+    <section class="block">
+      <h2>Their day</h2>
+      <p class="hint">Saathi checks in around these moments — "chai ho gayi?" at four, a reminder before evening aarti.</p>
+      <div class="rows routine" id="routine"></div>
+      <button class="btn" type="button" onclick="addRoutine()">Add to their day</button>
+    </section>
+
+    <section class="block">
+      <h2>Dates that matter</h2>
+      <p class="hint">Birthdays and anniversaries Saathi should remember.</p>
+      <div class="rows dates" id="dates"></div>
+      <button class="btn" type="button" onclick="addDate()">Add a date</button>
+    </section>
+
+    <section class="block">
+      <h2>Their stories, and what to avoid</h2>
+      <div id="chip-sections-2"></div>
+    </section>
+
+    <section class="block">
+      <h2>What Saathi has learned</h2>
+      <p class="hint">Picked up from conversations. Remove anything that is wrong or private, or add something yourself.</p>
+      <div class="chip-add" style="margin-bottom:10px">
+        <input type="text" id="newMemory" placeholder="e.g. Grandson Aarav has board exams in March">
+        <button class="btn" type="button" onclick="addMemory()">Add memory</button>
+      </div>
+      <div id="memories"><p class="empty">Loading…</p></div>
+    </section>
+
+    <div class="savebar">
+      <button class="btn primary" type="button" onclick="save()">Save changes</button>
+      <span id="saveStatus" role="status"></span>
+    </div>
+  </div>
+
+  <aside class="notebook" aria-label="What Saathi knows right now">
+    <h2>Saathi's notebook</h2>
+    <div class="who" id="nbName">…</div>
+    <div class="next"><b>Next time Saathi starts a conversation</b><span id="nbNext">…</span></div>
+    <details open><summary>Everything Saathi will keep in mind</summary><pre id="nbBlock"></pre></details>
+  </aside>
+</main>
+
+<script>
+const API = 'http://127.0.0.1:8000/api';
+const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+const rid = new URLSearchParams(location.search).get('recipient_id')
+  || sessionStorage.getItem('selectedRecipientId') || localStorage.getItem('selectedRecipientId');
+const H = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+const CHIPS = [
+  ['favorite_foods', 'Favourite foods', 'Aloo paratha'],
+  ['favorite_music', 'Songs and bhajans', 'Achyutam Keshavam'],
+  ['favorite_shows', 'Shows and films', 'Ramayan'],
+  ['hobbies', 'Hobbies', 'Gardening'],
+  ['disliked_foods', 'Foods they dislike', 'Karela'],
+];
+const CHIPS2 = [
+  ['life_stories', 'Stories they love telling', 'Taught in Jammu for 30 years'],
+  ['topics_to_avoid', 'Never bring up', "Late husband's illness"],
+];
+const TEXT = ['preferred_name','language_preference','native_language','hometown','former_occupation','faith','dietary_notes','conversation_style','wake_time','sleep_time'];
+let profile = {};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function chipSection(host, [key, label, ph]) {
+  const id = 'chips-' + key;
+  host.insertAdjacentHTML('beforeend', `<div style="margin-top:12px"><label class="f" for="in-${key}">${label}</label>
+    <div class="chips" id="${id}"></div>
+    <div class="chip-add"><input type="text" id="in-${key}" placeholder="e.g. ${esc(ph)}">
+    <button class="btn" type="button" onclick="addChip('${key}')">Add</button></div></div>`);
+  document.getElementById('in-' + key).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addChip(key); } });
+}
+function renderChips(key) {
+  document.getElementById('chips-' + key).innerHTML = (profile[key] || []).map((v, i) =>
+    `<span class="chip">${esc(v)}<button type="button" aria-label="Remove ${esc(v)}" onclick="removeChip('${key}',${i})">×</button></span>`).join('');
+}
+function addChip(key) {
+  const el = document.getElementById('in-' + key); const v = el.value.trim();
+  if (!v) return; (profile[key] = profile[key] || []).push(v); el.value = ''; renderChips(key);
+}
+function removeChip(key, i) { profile[key].splice(i, 1); renderChips(key); }
+
+function familyRow(f = {}) {
+  return `<div class="row">
+    <input type="text" placeholder="Name" value="${esc(f.name)}" data-k="name">
+    <input type="text" placeholder="Relation (son…)" value="${esc(f.relation)}" data-k="relation">
+    <input type="text" placeholder="Lives in" value="${esc(f.location)}" data-k="location">
+    <input type="text" placeholder="Note (calls on Sundays)" value="${esc(f.notes)}" data-k="notes">
+    <label class="small"><input type="checkbox" data-k="is_emergency_contact" ${f.is_emergency_contact ? 'checked' : ''}> First contact</label>
+    <button class="icon" type="button" aria-label="Remove" onclick="this.parentElement.remove()">×</button></div>`;
+}
+function routineRow(r = {}) {
+  return `<div class="row">
+    <input type="time" value="${esc(r.time)}" data-k="time">
+    <input type="text" placeholder="Morning walk, aarti, chai…" value="${esc(r.activity)}" data-k="activity">
+    <label class="small"><input type="checkbox" data-k="checkin" ${r.checkin === false ? '' : 'checked'}> Saathi checks in</label>
+    <button class="icon" type="button" aria-label="Remove" onclick="this.parentElement.remove()">×</button></div>`;
+}
+function dateRow(d = {}) {
+  return `<div class="row">
+    <input type="text" placeholder="Aarav's birthday" value="${esc(d.label)}" data-k="label">
+    <input type="text" placeholder="MM-DD" value="${esc(d.date)}" data-k="date">
+    <button class="icon" type="button" aria-label="Remove" onclick="this.parentElement.remove()">×</button></div>`;
+}
+const addFamily = () => document.getElementById('family').insertAdjacentHTML('beforeend', familyRow());
+const addRoutine = () => document.getElementById('routine').insertAdjacentHTML('beforeend', routineRow());
+const addDate = () => document.getElementById('dates').insertAdjacentHTML('beforeend', dateRow());
+function readRows(id) {
+  return [...document.querySelectorAll(`#${id} .row`)].map(row => {
+    const o = {}; row.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value.trim());
+    return o;
+  });
+}
+
+async function load() {
+  if (!token || !rid) {
+    document.querySelector('main').innerHTML = '<p class="err">Choose a person on the dashboard first, then open this page again.</p>';
+    return;
+  }
+  const r = await fetch(`${API}/personalization/${rid}/profile`, { headers: H });
+  if (!r.ok) { document.getElementById('saveStatus').innerHTML = `<span class="err">Couldn't load the profile (${r.status}). Sign in again and retry.</span>`; return; }
+  const d = await r.json(); profile = d.profile;
+  document.getElementById('title').textContent = `Tell Saathi about ${d.recipient.full_name}`;
+  TEXT.forEach(k => { const el = document.getElementById(k); if (el && profile[k] != null) el.value = profile[k]; });
+  CHIPS.forEach(c => renderChips(c[0])); CHIPS2.forEach(c => renderChips(c[0]));
+  document.getElementById('family').innerHTML = (profile.family_members || []).map(familyRow).join('');
+  document.getElementById('routine').innerHTML = (profile.daily_routine || []).map(routineRow).join('');
+  document.getElementById('dates').innerHTML = (profile.important_dates || []).map(dateRow).join('');
+  loadMemories(); loadPreview();
+}
+
+async function save() {
+  const st = document.getElementById('saveStatus'); st.textContent = 'Saving…';
+  const body = {};
+  TEXT.forEach(k => body[k] = document.getElementById(k).value);
+  [...CHIPS, ...CHIPS2].forEach(([k]) => body[k] = profile[k] || []);
+  body.family_members = readRows('family').filter(f => f.name);
+  body.daily_routine = readRows('routine').filter(x => x.time && x.activity).sort((a, b) => a.time.localeCompare(b.time));
+  body.important_dates = readRows('dates').filter(x => x.label && x.date);
+  const r = await fetch(`${API}/personalization/${rid}/profile`, { method: 'PUT', headers: H, body: JSON.stringify(body) });
+  st.innerHTML = r.ok ? 'Saved. Saathi will use this in the next conversation.' : `<span class="err">Not saved (${r.status}). Check the dates are MM-DD and try again.</span>`;
+  if (r.ok) loadPreview();
+}
+
+async function loadMemories() {
+  const r = await fetch(`${API}/personalization/${rid}/memories`, { headers: H });
+  const host = document.getElementById('memories');
+  if (!r.ok) { host.innerHTML = '<p class="err">Could not load memories.</p>'; return; }
+  const { memories } = await r.json();
+  host.innerHTML = memories.length ? memories.map(m => `<div class="mem"><div>
+      <span class="cat">${esc(m.category.replace('_', ' '))}</span>${esc(m.content)}
+      <div class="meta">${m.source === 'caregiver' ? 'Added by family' : 'Learned in conversation'}${m.mention_count > 1 ? `, mentioned ${m.mention_count} times` : ''}${m.follow_up_at && !m.followed_up ? ', Saathi will ask about this' : ''}</div></div>
+      <button class="icon" type="button" aria-label="Forget this" title="Forget this" onclick="forget(${m.id})">×</button></div>`).join('')
+    : '<p class="empty">Nothing yet. As they chat with Saathi, the things they share will show up here.</p>';
+}
+async function forget(id) { await fetch(`${API}/personalization/${rid}/memories/${id}`, { method: 'DELETE', headers: H }); loadMemories(); loadPreview(); }
+async function addMemory() {
+  const el = document.getElementById('newMemory'); const v = el.value.trim(); if (!v) return;
+  await fetch(`${API}/personalization/${rid}/memories`, { method: 'POST', headers: H, body: JSON.stringify({ content: v, category: 'other', importance: 4 }) });
+  el.value = ''; loadMemories(); loadPreview();
+}
+async function loadPreview() {
+  const r = await fetch(`${API}/personalization/${rid}/context-preview`, { headers: H });
+  if (!r.ok) return;
+  const d = await r.json();
+  document.getElementById('nbName').textContent = d.address_as;
+  const reasons = { greeting: 'A greeting for this time of day', routine: 'Their routine', memory_followup: 'Following up on something they told Saathi',
+    important_date: 'A date that matters', post_fall_followup: 'Checking how they feel after a fall', long_silence: 'They have been quiet for a while' };
+  document.getElementById('nbNext').textContent = d.next_proactive ? `${reasons[d.next_proactive.reason] || d.next_proactive.reason}. ${d.next_proactive.instruction}` : 'Nothing due right now.';
+  document.getElementById('nbBlock').textContent = d.prompt_block;
+}
+
+CHIPS.forEach(c => chipSection(document.getElementById('chip-sections'), c));
+CHIPS2.forEach(c => chipSection(document.getElementById('chip-sections-2'), c));
+document.getElementById('newMemory').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addMemory(); } });
+load();
+</script>
+</body>
+</html>

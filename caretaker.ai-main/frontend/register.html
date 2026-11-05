@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTaker - Register</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="register-container">
+            <h2 id="registerTitle">Register as CareTaker</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" pattern="[0-9]{10}" maxlength="10" placeholder="10-digit number" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" autocomplete="new-password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Register as</label>
+                    <select id="role" name="role" required>
+                        <option value="caretaker">Caretaker</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="specializationGroup" style="display: none;">
+                    <label for="specialization">Specialization (for Doctors)</label>
+                    <input type="text" id="specialization" name="specialization" placeholder="e.g. Cardiologist">
+                </div>
+
+                <div id="careRecipientsContainer">
+                    <div id="careRecipients">
+                        <h3>Care Recipient Details</h3>
+                        <div class="care-recipient">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="recipient_name">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="recipient_email">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" name="recipient_phone">
+                            </div>
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="number" name="recipient_age">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="recipient_gender">
+                                    <option value="">Select gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Height (cm)</label>
+                                <input type="number" step="0.1" name="recipient_height" placeholder="e.g. 170.5">
+                            </div>
+                            <div class="form-group">
+                                <label>Weight (kg)</label>
+                                <input type="number" step="0.1" name="recipient_weight" placeholder="e.g. 75.0">
+                            </div>
+                            <div class="form-group">
+                                <label>Blood Group</label>
+                                <select name="recipient_blood_group">
+                                    <option value="">Select blood group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Emergency Contact</label>
+                                <input type="tel" name="recipient_emergency_contact" placeholder="e.g. 9876543211">
+                            </div>
+                            <div class="form-group">
+                                <label>Respiratory Condition Status</label>
+                                <select name="recipient_condition">
+                                    <option value="">Select condition</option>
+                                    <option value="false">Normal</option>
+                                    <option value="true">Has Respiratory Issues</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Medical Report (PDF / Image / Doc)</label>
+                                <input type="file" name="recipient_report" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+                            </div>
+                            <button type="button" class="remove-recipient" style="display: none;">&times;</button>
+                        </div>
+                    </div>
+                    <button type="button" id="addRecipient">Add Another Care Recipient</button>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+            <p class="form-footer">
+                Already have an account? <a href="index.html">Login here</a>
+            </p>
+        </div>
+    </div>
+    <script src="js/register.js?v=2" defer></script>
+
+</body>
+
+</html>

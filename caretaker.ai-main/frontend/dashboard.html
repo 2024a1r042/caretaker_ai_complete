@@ -1,0 +1,4356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="js/auth-guard.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTaker &middot; Profile Hub</title>
+    <script src="vendor/chart-4.4.1.umd.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --border-light: rgba(226, 232, 240, 0.8);
+            --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --nav-height: 70px;
+            --bottom-nav-height: 75px;
+            --pastel-mint: #B2F7EF;
+            --pastel-peach: #FFDAC1;
+            --pastel-lavender: #E2D1F9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-main);
+            background-image:
+                radial-gradient(at 0% 0%, var(--pastel-mint) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, var(--pastel-peach) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, var(--pastel-lavender) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* App Layout */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: var(--nav-height);
+            padding-bottom: var(--bottom-nav-height);
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .top-nav h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--primary);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .nav-icon-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 99px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
+
+        /* Caregiver Profile Card */
+        .profile-section {
+            margin-bottom: 24px;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 12px 0;
+        }
+
+        .profile-avatar-wrap {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: var(--shadow-sm);
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .profile-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile-avatar-wrap .avatar-icon-fallback {
+            font-size: 2.4rem;
+            color: var(--primary);
+            display: none;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-avatar-wrap.no-photo {
+            overflow: visible;
+        }
+
+        .profile-avatar-wrap.no-photo img {
+            display: none;
+        }
+
+        .profile-avatar-wrap.no-photo .avatar-icon-fallback {
+            display: flex;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        .profile-info p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .role-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: white;
+            padding: 4px 0;
+            border-radius: 99px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid transparent;
+        }
+
+        .stat-card i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .stat-card.urgent {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+        }
+
+        .stat-card.urgent i {
+            color: var(--warning);
+        }
+
+        .stat-data h3 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-data p {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Elders Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+
+        .section-header h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .see-all {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .elder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .elder-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border-light);
+        }
+
+        .elder-card:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-md);
+        }
+
+        .elder-avatar-wrap {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .elder-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .elder-main h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .elder-main p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .risk-area {
+            text-align: right;
+        }
+
+        .risk-score {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .risk-score span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .risk-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .risk-bar-container {
+            grid-column: 1 / 4;
+            margin-top: 8px;
+        }
+
+        .risk-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .view-record-btn {
+            grid-column: 1 / 4;
+            margin-top: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .view-record-btn:hover {
+            background: var(--accent);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 10px;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.2s;
+            min-width: 70px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item span {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        /* Notification Panel */
+        .notification-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: white;
+            z-index: 2000;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-panel.open {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h3 {
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: 16px;
+            padding: 20px;
+            border-radius: 24px;
+            background: white;
+            margin-bottom: 16px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid transparent;
+            border-left: 6px solid #1e3a8a;
+            transition: all 0.2s ease;
+        }
+
+        .notification-item:hover {
+            transform: translateX(4px);
+            border-color: rgba(30, 58, 138, 0.1);
+        }
+
+        .notif-icon-wrap {
+            width: 52px;
+            height: 52px;
+            background: #EFF6FF;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #1e3a8a;
+            flex-shrink: 0;
+        }
+
+        .notif-main {
+            flex: 1;
+        }
+
+        .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .notif-type {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .notif-time {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .notif-body {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .notif-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .notif-btn {
+            padding: 8px 18px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .notif-btn.primary {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .notif-btn.secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .notif-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .notif-delete {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            color: #94a3b8;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+
+        .notif-delete:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fecaca;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            border-radius: 999px;
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: progressPulse 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes progressPulse {
+            from {
+                opacity: 0.7;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ---- Per-report highlight ---- */
+        .report-card.selected {
+            border-color: var(--accent);
+            background: rgba(74, 144, 226, 0.06);
+            box-shadow: 0 4px 14px rgba(74, 144, 226, 0.12);
+        }
+
+        .report-card .report-select-indicator {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-left: 8px;
+            vertical-align: middle;
+            display: none;
+        }
+
+        .report-card.selected .report-select-indicator {
+            display: inline-block;
+        }
+
+        /* ---- Toast Notification ---- */
+        #uploadToast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background: white;
+            border: 1px solid rgba(74, 144, 226, 0.25);
+            border-radius: 18px;
+            padding: 16px 22px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            z-index: 9999;
+            transform: translateY(120px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #uploadToast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #uploadToast.success .toast-icon {
+            color: var(--success);
+        }
+
+        #uploadToast.error .toast-icon {
+            color: var(--danger);
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        /* ---- Mind Map Optimization ---- */
+        #medicalInsightsContainer {
+            position: relative;
+            padding: 20px 0;
+            overflow: visible;
+        }
+
+        .mind-map-spine {
+            position: absolute;
+            top: 60px;
+            bottom: 40px;
+            left: 50%;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), var(--accent-2), transparent);
+            transform: translateX(-50%);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .mind-map-hub {
+            width: 64px;
+            height: 64px;
+            background: white;
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.4);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0px rgba(74, 144, 226, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 25px rgba(74, 144, 226, 0.6);
+            }
+
+            100% {
+                box-shadow: 0 0 0px rgba(74, 144, 226, 0.4);
+            }
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .insight-card {
+            background: white;
+            border: 1px solid rgba(74, 144, 226, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            position: relative;
+            animation: slideUp 0.6s ease backwards;
+        }
+
+        /* Connecting arms */
+        .insight-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 15px;
+            height: 2px;
+            background: var(--accent);
+            opacity: 0.3;
+        }
+
+        /* Alternating sides for spine connectivity */
+        .insight-card:nth-child(odd) {
+            margin-right: 15px;
+        }
+
+        .insight-card:nth-child(odd)::after {
+            right: -15px;
+        }
+
+        .insight-card:nth-child(even) {
+            margin-left: 15px;
+        }
+
+        .insight-card:nth-child(even)::after {
+            left: -15px;
+        }
+
+        .insight-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(74, 144, 226, 0.15);
+            border-color: rgba(74, 144, 226, 0.3);
+            z-index: 5;
+        }
+
+        .insight-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0 0 0;
+        }
+
+        .insight-content li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .insight-content li::before {
+            content: "ðŸ‘‰";
+            position: absolute;
+            left: 0;
+            font-size: 0.8rem;
+            filter: grayscale(1);
+            opacity: 0.6;
+        }
+
+        @media (max-width: 1200px) {
+            .insight-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mind-map-spine {
+                left: 24px;
+                left: 24px;
+                transform: none;
+            }
+
+            .insight-card {
+                margin-left: 45px !important;
+                margin-right: 0 !important;
+            }
+
+            .insight-card::after {
+                left: -21px !important;
+                width: 21px;
+            }
+
+            .mind-map-hub {
+                margin-left: 0;
+            }
+        }
+
+        /* Spinner Component */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(74, 144, 226, 0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ─── Dose Confirmation Section ─── */
+        .dose-confirm-section {
+            background: linear-gradient(135deg, #fff7ed, #fff);
+            border: 2px solid #fed7aa;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 28px;
+            animation: slideUp 0.5s ease;
+        }
+
+        .dose-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .dose-section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #92400e;
+        }
+
+        .dose-urgent-badge {
+            background: #f97316;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 99px;
+            letter-spacing: 0.04em;
+        }
+
+        .dose-cards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dose-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid #fed7aa;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.06);
+            transition: transform 0.2s ease, opacity 0.35s ease, max-height 0.35s ease;
+            overflow: hidden;
+        }
+
+        .dose-card.removing {
+            opacity: 0;
+            transform: translateX(40px);
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dose-pill-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #fb923c, #f97316);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .dose-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .dose-med-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dose-meta {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .dose-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .dose-btn {
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .dose-btn.taken {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .dose-btn.taken:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .dose-btn.missed {
+            background: white;
+            color: #ef4444;
+            border: 2px solid #fca5a5;
+        }
+
+        .dose-btn.missed:hover {
+            background: #fff1f1;
+            border-color: #ef4444;
+        }
+
+        .dose-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .dose-empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: #64748b;
+        }
+
+        .dose-empty-state .check-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .dose-card {
+                flex-wrap: wrap;
+            }
+            .dose-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        /* Environmental Dashboard Section */
+        .env-dashboard {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.04), rgba(30, 144, 255, 0.01));
+            border: 1px solid rgba(30, 144, 255, 0.12);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 16px;
+            animation: slideUp 0.6s ease 0.2s backwards;
+        }
+
+        .env-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .env-stat {
+            background: white;
+            padding: 16px 12px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: transform 0.3s ease;
+        }
+
+        .env-stat:hover {
+            transform: translateY(-3px);
+            border-color: rgba(30, 144, 255, 0.3);
+        }
+
+        .env-stat label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.04em;
+        }
+
+        .env-stat span {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e90ff;
+        }
+
+        @media (max-width: 1080px) {
+            .app-shell {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .recipient-list {
+                max-height: none;
+            }
+        }
+
+        /* Vitals Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .vitals-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+        }
+
+        .form-group input {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: #f8fafc;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .modal-footer {
+            margin-top: 32px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* New Profile Hub Styles */
+        .profile-hub-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .caretaker-profile-card {
+            background: white;
+            border-radius: 32px;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-card-header .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #1a365d;
+        }
+
+        .logout-link {
+            color: #ef4444;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+
+        .caretaker-avatar-wrap {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 20px;
+            padding: 8px;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .caretaker-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            object-fit: cover;
+        }
+
+        .caretaker-info h2 {
+            font-size: 1.8rem;
+            margin: 0 0 4px;
+            font-weight: 800;
+        }
+
+        .caretaker-info .email {
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 8px 20px;
+            border-radius: 99px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .elders-section {
+            background: #f8fafc;
+            border-radius: 32px;
+            padding: 32px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .section-header .count {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .recipient-search {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .recipient-search:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .elder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .elder-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 24px;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            position: relative;
+        }
+
+        .elder-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-color: #3b82f6;
+        }
+
+        .elder-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            bottom: 15%;
+            width: 4px;
+            background: #1e3a8a;
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .elder-card:hover::before {
+            opacity: 1;
+        }
+
+        .elder-avatar-wrap {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #e2e8f0;
+            flex-shrink: 0;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .elder-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .elder-main {
+            flex: 1;
+        }
+
+        .elder-main h4 {
+            margin: 0 0 2px;
+            font-size: 1.1rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+        
+        .elder-main p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .risk-area {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .risk-score {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .risk-score span {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .risk-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+
+        .risk-bar-container {
+            width: 100px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+            display: none; /* Hide on small screens, or we can keep it */
+        }
+
+        @media (min-width: 1024px) {
+            .risk-bar-container { display: block; }
+        }
+
+        .risk-bar {
+            height: 100%;
+            width: 100%;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 1s ease-out;
+        }
+
+        .view-record-btn {
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .view-record-btn:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+        }
+
+        /* Mobile Responsiveness & Dynamic Layouts */
+        @media (max-width: 768px) {
+            :root {
+                --nav-height: 60px;
+            }
+
+            .app-container {
+                padding-top: var(--nav-height);
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .top-nav {
+                padding: 0 16px;
+            }
+
+            .sidebar-brand span {
+                display: none; /* Keep just the heart icon on very small screens if needed, or just shrink font */
+            }
+            .sidebar-brand { font-size: 1.2rem; }
+
+            .stats-section {
+                grid-template-columns: 1fr; /* Stack cards */
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .elders-section {
+                margin-top: 24px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .recipient-search {
+                width: 100% !important;
+            }
+
+            .elder-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 24px;
+                gap: 12px;
+            }
+
+            .elder-card::before {
+                top: 0;
+                bottom: auto;
+                left: 15%;
+                right: 15%;
+                width: auto;
+                height: 4px;
+                border-radius: 0 0 4px 4px;
+            }
+
+            .elder-main h4 {
+                font-size: 1.2rem;
+            }
+
+            .elder-arrow {
+                display: none;
+            }
+            
+            .elder-list {
+                gap: 12px;
+            }
+
+            .notification-panel {
+                max-width: 100%;
+            }
+        }
+
+        .elder-details .status {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* Care Team Section */
+        .care-team-section {
+            margin-top: 32px;
+            margin-bottom: 24px;
+        }
+
+        .doctor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .doctor-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid var(--border-light);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .doctor-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+        }
+
+        .doctor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .doctor-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doctor-info h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .doctor-info p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .doctor-stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 99px;
+            flex-shrink: 0;
+        }
+
+        .doc-badge-patients {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .doc-badge-alerts {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .empty-care-team {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .empty-care-team i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: block;
+        }
+
+        .elder-avatar-wrap.no-photo {
+            overflow: visible;
+        }
+        .elder-avatar-wrap.no-photo img { display: none; }
+        .elder-avatar-wrap.no-photo .elder-avatar-icon { display: flex; }
+        .elder-avatar-icon {
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: var(--primary);
+            display: none;
+        }
+        /* Global Button System */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-icon {
+            background: transparent;
+            padding: 6px;
+            color: inherit;
+        }
+        .btn-icon:hover {
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .btn-lg {
+            padding: 12px 20px;
+            font-size: 16px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .btn-full {
+                width: 100%;
+            }
+        }
+    </style>
+    <!-- Socket.IO config for live alerts -->
+    <script src="vendor/socket.io-4.7.5.min.js"></script>
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="top-nav">
+            <div class="sidebar-brand">
+                <i class="fas fa-heartbeat"></i>
+                <span>CareTaker.ai</span>
+            </div>
+            <div class="nav-right">
+                <button id="notificationBtn" class="btn btn-icon" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span id="notificationBadge" class="badge"></span>
+                </button>
+                <button onclick="goToSettings()" class="btn btn-icon">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button onclick="logout()" class="btn btn-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Section 1: Caregiver Profile Card -->
+            <section id="caregiverProfile" class="profile-section">
+                <div class="profile-card">
+                    <!-- Avatar: starts with icon, replaced by photo if available -->
+                    <div class="profile-avatar-wrap no-photo" id="profileAvatarWrap">
+                        <img id="profileAvatar" src="" alt="Caretaker" style="display:none;"
+                            onload="this.style.display='block'; this.closest('.profile-avatar-wrap').classList.remove('no-photo')"
+                            onerror="this.style.display='none'; this.closest('.profile-avatar-wrap').classList.add('no-photo')">
+                        <i class="fas fa-user avatar-icon-fallback"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h2 id="caretakerDisplayName">---</h2>
+                        <p id="caretakerDisplayEmail">---</p>
+                        <span class="role-badge">Primary Family Caregiver</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Quick Stats -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-data">
+                        <h3 id="eldersCountStats">0</h3>
+                        <p>ACTIVE ELDERS</p>
+                    </div>
+                </div>
+                <div class="stat-card urgent" id="alertsStatCard">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="stat-data">
+                        <h3 id="actionsNeededCount">0</h3>
+                        <p>ACTION NEEDED</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Section 3: Elders List -->
+            <section class="elders-section">
+                <div class="section-header">
+                    <h3>My Family Elders</h3>
+                    <input id="recipientSearch" type="search" class="recipient-search" placeholder="Search elders...">
+                </div>
+                <div id="eldersHubList" class="elder-list">
+                    <!-- Cards injected here -->
+                    <div class="muted" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading health records...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Your Care Team (Doctors) -->
+            <section class="care-team-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-user-md" style="color:var(--primary);margin-right:8px;"></i>Your Care Team</h3>
+                    <span class="see-all" id="doctorCountBadge"></span>
+                </div>
+                <div id="doctorsList" class="doctor-list">
+                    <div class="muted" style="text-align:center;padding:24px;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading doctors...
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Notification Panel -->
+        <div id="notificationPanel" class="notification-panel">
+            <div class="panel-header">
+                <h3>Care Alerts</h3>
+                <button onclick="toggleNotifications()" class="btn btn-icon" style="font-size: 1.5rem;">&times;</button>
+            </div>
+            <div id="notificationList" class="notification-list">
+                <!-- Items injected here -->
+            </div>
+        </div>
+
+        <div id="panelOverlay" class="overlay" onclick="toggleNotifications()"></div>
+
+
+
+        <!-- Toast Notification (kept but hidden by default) -->
+        <div id="uploadToast">
+            <span class="toast-icon" id="toastIcon">✓</span>
+            <span id="toastMessage">Update successful!</span>
+        </div>
+    </div>
+
+    <!-- Manual Vitals Modal -->
+    <div id="vitalsModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-heartbeat" style="color: var(--accent);"></i> Log Today's Vitals</h3>
+                <button class="close-modal" onclick="closeVitalsModal()">&times;</button>
+            </div>
+            <form id="vitalsForm" onsubmit="event.preventDefault(); saveVitals();">
+                <div class="vitals-form-grid">
+                    <div class="form-group">
+                        <label>Heart Rate (bpm)</label>
+                        <input type="number" id="input-hr" placeholder="e.g. 85">
+                    </div>
+                    <div class="form-group">
+                        <label>SpO2 (%)</label>
+                        <input type="number" id="input-o2" placeholder="e.g. 97">
+                    </div>
+                    <div class="form-group">
+                        <label>Systolic BP (mmHg)</label>
+                        <input type="number" id="input-sys" placeholder="e.g. 140">
+                    </div>
+                    <div class="form-group">
+                        <label>Diastolic BP (mmHg)</label>
+                        <input type="number" id="input-dia" placeholder="e.g. 90">
+                    </div>
+                    <div class="form-group">
+                        <label>Temperature (Â°F)</label>
+                        <input type="number" step="0.1" id="input-temp" placeholder="e.g. 98.6">
+                    </div>
+                    <div class="form-group">
+                        <label>Sleep (Score)</label>
+                        <input type="number" id="input-sleep" placeholder="e.g. 85">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Weight (kg) <span style="font-weight: 400; text-transform: none;">â€” updates
+                                profile</span></label>
+                        <input type="number" step="0.1" id="input-weight" placeholder="e.g. 72">
+                        <p style="font-size: 0.7rem; color: var(--muted); margin-top: 6px;">
+                            <i class="fas fa-info-circle"></i> BMI auto-calculates from profile height + current weight.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="ghost-btn" onclick="closeVitalsModal()">Cancel</button>
+                    <button type="submit" class="primary-btn" id="saveVitalsBtn">Save Vitals</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║   PENDING DOSE CONFIRMATIONS SECTION    ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <!-- Injected by CareTaker.ai confirmation-based inventory system -->
+    <!-- Hidden when empty; shown dynamically via JS + Socket.IO      -->
+    <div id="doseConfirmSection" class="dose-confirm-section" style="display:none;">
+        <div class="dose-section-header">
+            <div class="dose-section-title">
+                💊 Pending Dose Confirmations
+                <span id="doseConfirmBadge" class="dose-urgent-badge">0 PENDING</span>
+            </div>
+        </div>
+        <div id="doseConfirmList" class="dose-cards-list"></div>
+    </div>
+
+    <script src="vendor/tf-4.17.0.min.js"></script>
+    <script src="vendor/speech-commands-0.5.4.min.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        const EMOTION_API_BASE = API_BASE + '/emotion';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        const clearReportSelectBtn = document.getElementById('clearReportSelectBtn');
+        if (clearReportSelectBtn) {
+            clearReportSelectBtn.addEventListener('click', () => clearReportSelection());
+        }
+
+        const caretakerNameEl = document.getElementById('caretakerName');
+        const caretakerFullEl = document.getElementById('caretakerFullName');
+        const caretakerEmailEl = document.getElementById('caretakerEmail');
+        const caretakerPhoneEl = document.getElementById('caretakerPhone');
+        const sidebarNameEl = document.getElementById('sidebarCaretakerName');
+        const sidebarEmailEl = document.getElementById('sidebarCaretakerEmail');
+        const recipientsListEl = document.getElementById('recipientsList');
+        const recipientSearchEl = document.getElementById('recipientSearch');
+        const recipientTitleEl = document.getElementById('recipientCardTitle');
+        const recipientMetaEl = document.getElementById('recipientCardMeta');
+        const recipientBadgesEl = document.getElementById('recipientBadges');
+        const selectedRecipientEl = document.getElementById('selectedRecipient');
+        const historyRecipientEl = document.getElementById('historyRecipient');
+        const refreshHistoryBtn = document.getElementById('refreshHistory');
+        const medicalSummaryEl = document.getElementById('medicalSummaryText');
+        const summaryStatusEl = document.getElementById('summaryStatus');
+        const reportsListEl = document.getElementById('reportsList');
+        const refreshReportsBtn = document.getElementById('refreshReports');
+        const regenerateSummaryBtn = document.getElementById('regenerateSummary');
+        const reportSortOrderSelect = document.getElementById('reportSortOrder');
+        const profileLinkEl = document.getElementById('profileLink');
+
+        let currentRecipientReports = [];
+
+        // Video monitoring DOM refs
+        const startEmotionMonitorBtn = document.getElementById('startEmotionMonitorBtn');
+        const emotionStatusEl = document.getElementById('emotionStatus');
+        const emotionVideoEl = document.getElementById('emotionVideo');
+        const emotionCurrentEl = document.getElementById('emotionCurrent');
+        const emotionConfidenceEl = document.getElementById('emotionConfidence');
+
+        let recipientsCache = [];
+        let selectedRecipientId = null;
+        let selectedRecipientName = 'All';
+        let sessionPredictions = [];
+        let summaryGenerating = false;
+        let reportsRefreshing = false;
+
+        // Video monitoring state
+        let emotionMonitoringActive = false;
+        let emotionStream = null;
+        let emotionCaptureInterval = null;
+
+        document.querySelectorAll('.nav-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const targetId = chip.getAttribute('data-target');
+                const section = document.getElementById(targetId);
+                if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Add event listeners only if elements exist
+        if (refreshHistoryBtn) {
+            refreshHistoryBtn.addEventListener('click', () => fetchAndRenderRecordings());
+        }
+        if (refreshReportsBtn) {
+            refreshReportsBtn.addEventListener('click', () => fetchRecipientReports());
+        }
+        if (regenerateSummaryBtn) {
+            regenerateSummaryBtn.addEventListener('click', () => handleRegenerateSummary());
+        }
+
+        recipientSearchEl.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = recipientsCache.filter(r => (r.full_name || '').toLowerCase().includes(term));
+            renderRecipients(filtered);
+        });
+
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            const overlay = document.getElementById('panelOverlay');
+            if (panel && overlay) {
+                panel.classList.toggle('open');
+                overlay.classList.toggle('show');
+            }
+        }
+
+        async function fetchProfile() {
+            try {
+                const res = await fetch(API_BASE + '/profile', {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                if (!res.ok) throw new Error('Failed to fetch profile');
+                const data = await res.json();
+                if (!data || !data.caretaker) return;
+
+                const caretaker = data.caretaker;
+                const name = caretaker.full_name || caretaker.username;
+
+                // Update Profile Hub Card
+                const hubName = document.getElementById('caretakerDisplayName');
+                const hubEmail = document.getElementById('caretakerDisplayEmail');
+                const hubAvatar = document.getElementById('profileAvatar');
+                const hubAvatarWrap = document.getElementById('profileAvatarWrap');
+                if (hubName) hubName.textContent = name;
+                if (hubEmail) hubEmail.textContent = caretaker.email || '---';
+                if (hubAvatar) {
+                    // Use actual photo if available, else fall back to ui-avatars (never broken)
+                    const photoUrl = caretaker.photo_url || caretaker.profile_photo || caretaker.avatar_url || null;
+                    if (photoUrl) {
+                        hubAvatar.src = photoUrl;
+                    } else {
+                        // No real photo: show the icon fallback
+                        if (hubAvatarWrap) hubAvatarWrap.classList.add('no-photo');
+                        hubAvatar.src = ''; // leave blank; onerror will also catch bad URLs
+                    }
+                }
+
+                recipientsCache = data.care_recipients || [];
+                renderRecipients(recipientsCache);
+                updateNotificationCenter(recipientsCache);
+
+                // Update Stats
+                const eldersCountStats = document.getElementById('eldersCountStats');
+                if (eldersCountStats) eldersCountStats.textContent = recipientsCache.length;
+
+                // Auto-select first recipient for background tasks if needed
+                if (recipientsCache.length > 0 && !selectedRecipientId) {
+                    selectedRecipientId = recipientsCache[0].id;
+                }
+            } catch (err) {
+                console.error('Error fetching profile', err);
+            }
+        }
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function updateNotificationCenter(recipients) {
+            const listEl = document.getElementById('notificationList');
+            const badge = document.getElementById('notificationBadge');
+            const actionCountEl = document.getElementById('actionsNeededCount');
+
+            if (!listEl) return;
+
+            let allNotifications = [];
+            let totalUnread = 0;
+
+            recipients.forEach(r => {
+                // Add Clinical Alerts
+                if (r.alerts && r.alerts.length > 0) {
+                    r.alerts.forEach(a => {
+                        allNotifications.push({
+                            type: 'alert',
+                            title: a.severity === 'critical' ? 'CRITICAL RISK' : 'HEALTH ALERT',
+                            recipientName: r.full_name,
+                            recipientId: r.id,
+                            id: a.id,
+                            message: a.message,
+                            severity: a.severity,
+                            time: new Date(a.created_at)
+                        });
+                        totalUnread++;
+                    });
+                }
+
+                // Add Medication Reminders (Triggered by schedule)
+                if (r.medications && r.medications.length > 0) {
+                    const dismissedMeds = JSON.parse(sessionStorage.getItem('dismissedMeds') || '[]');
+                    r.medications.forEach(m => {
+                        if (m.schedule_time) {
+                            const times = m.schedule_time.split(',').map(s => s.trim());
+                            times.forEach(t => {
+                                const [hh, mm] = t.split(':');
+                                const medTime = new Date();
+                                medTime.setHours(parseInt(hh), parseInt(mm), 0, 0);
+
+                                const medId = `med-${m.id || m.medication_id}-${t}`;
+                                if (dismissedMeds.includes(medId)) return;
+
+                                // Logic: Only show if time has passed today, OR if it's coming up within 30 mins
+                                const diffMins = (new Date() - medTime) / 60000;
+                                
+                                // Show alerts for meds taken in the last 4 hours or due in the next 0 mins
+                                if (diffMins >= 0 && diffMins < 240) {
+                                    allNotifications.push({
+                                        type: 'med',
+                                        title: 'MEDICINE DUE',
+                                        recipientName: r.full_name,
+                                        recipientId: r.id,
+                                        id: medId,
+                                        message: `It's time for ${m.medicine_name}${m.dosage ? ' (' + m.dosage + ')' : ''}.`,
+                                        time: medTime
+                                    });
+                                    totalUnread++;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Sort by time (newest first)
+            allNotifications.sort((a, b) => b.time - a.time);
+
+            if (allNotifications.length === 0) {
+                listEl.innerHTML = '<div class="muted" style="text-align: center; padding: 40px;">No new notifications.</div>';
+            } else {
+                listEl.innerHTML = allNotifications.map(n => {
+                    const icon = n.type === 'alert' ? 'fa-exclamation-triangle' : 'fa-pills';
+                    const timeLabel = timeAgo(n.time);
+                    
+                    return `
+                        <div class="notification-item">
+                            <button class="btn btn-icon btn-sm" style="position: absolute; top: 12px; right: 12px; color: #94a3b8;" onclick="dismissLocalNotif('${n.id}', ${n.recipientId}, '${n.type}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="notif-icon-wrap">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <div class="notif-main">
+                                <div class="notif-header">
+                                    <span class="notif-type">${n.title}</span>
+                                    <span class="notif-time">${timeLabel}</span>
+                                </div>
+                                <div class="notif-body">
+                                    ${n.message}
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500;">
+                                        <i class="fas fa-user-circle"></i> ${n.recipientName}
+                                    </div>
+                                </div>
+                                <div class="notif-actions" style="margin-top: 12px; display: flex; gap: 8px;">
+                                    <button class="btn btn-primary btn-sm" onclick="window.location.href='featured_profile.html?recipient_id=${n.recipientId}'">Review</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="dismissLocalNotif('${n.id}', ${n.recipientId}, '${n.type}')">Acknowledge</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (badge) {
+                badge.textContent = totalUnread;
+                badge.style.display = totalUnread > 0 ? 'flex' : 'none';
+            }
+            if (actionCountEl) {
+                actionCountEl.textContent = totalUnread;
+            }
+        }
+
+        async function dismissLocalNotif(id, recipientId, type) {
+            if (type === 'alert') {
+                await dismissAlert(recipientId, id);
+            } else {
+                // For meds, we can just hide it locally or mark as dismissed for this session
+                const dismissed = JSON.parse(sessionStorage.getItem('dismissedMeds') || '[]');
+                dismissed.push(id);
+                sessionStorage.setItem('dismissedMeds', JSON.stringify(dismissed));
+                fetchProfile(); // Refresh UI
+            }
+        }
+
+        async function dismissAlert(recipientId, alertId) {
+            try {
+                const res = await fetch(`${API_BASE}/recipients/${recipientId}/alerts/${alertId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    fetchProfile(); // Refresh everything
+                }
+            } catch (err) {
+                console.error('Error dismissing alert:', err);
+            }
+        }
+
+        function scrollToElders() {
+            const section = document.querySelector('.elders-section');
+            if (section) section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderRecipients(list) {
+            const hubListEl = document.getElementById('eldersHubList');
+            if (!hubListEl) return;
+
+            if (!list.length) {
+                hubListEl.innerHTML = '<div class="muted" style="text-align: center; padding: 40px;">No family elders registered yet.</div>';
+            } else {
+                hubListEl.innerHTML = list.map(r => {
+                    const risk = r.risk_score || 0;
+                    let riskColor = '#10b981';
+                    if (risk > 70) riskColor = '#ef4444';
+                    else if (risk > 40) riskColor = '#f59e0b';
+
+                    // Only use photo if explicitly provided; else show icon
+                    const hasPhoto = r.photo_url || r.profile_photo;
+                    const avatarHtml = hasPhoto
+                        ? `<img src="${hasPhoto}" alt="${r.full_name}" onerror="this.closest('.elder-avatar-wrap').classList.add('no-photo')">
+                           <span class="elder-avatar-icon"><i class="fas fa-user"></i></span>`
+                        : `<img src="" alt="" style="display:none">
+                           <span class="elder-avatar-icon" style="display:flex;"><i class="fas fa-user"></i></span>`;
+
+                    return `
+                        <div class="elder-card">
+                            <div class="elder-avatar-wrap ${!hasPhoto ? 'no-photo' : ''}">
+                                ${avatarHtml}
+                            </div>
+                            <div class="elder-main">
+                                <h4>${r.full_name}</h4>
+                                <p>Age: ${r.age || '--'} &middot; ${r.gender || '--'}</p>
+                            </div>
+                            <div class="risk-area">
+                                <div class="risk-score" style="color: ${riskColor}">${risk}<span>/100</span></div>
+                                <div class="risk-label">RISK SCORE</div>
+                            </div>
+                            <div class="risk-bar-container">
+                                <div class="risk-bar">
+                                    <div class="risk-bar-fill" style="width: ${risk}%; background: ${riskColor}"></div>
+                                </div>
+                            </div>
+                            <div style="grid-column: 1 / 4; display: flex; gap: 10px; margin-top: 16px;">
+                                <button class="btn btn-primary" style="flex: 1;" onclick="location.href='featured_profile.html?recipient_id=${r.id}'">
+                                    View Health Record
+                                </button>
+                                <button class="btn btn-secondary" style="flex: 1;" id="gen-report-btn-${r.id}" onclick="generateAndDownloadWeeklyReport(${r.id}, '${r.full_name}', this)" title="Generate & download this week's AI health report">
+                                    <i class="fas fa-file-arrow-down"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function generateAndDownloadWeeklyReport(recipientId, name, btnEl) {
+            const origHtml = btnEl ? btnEl.innerHTML : '';
+            try {
+                if (btnEl) {
+                    btnEl.disabled = true;
+                    btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
+                }
+
+                // Single call: POST /generate — creates or returns cached report & streams JSON
+                const res = await fetch(`${API_BASE}/recipients/${recipientId}/weekly-reports/generate?force=true`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Generation failed');
+                }
+
+                const blob = await res.blob();
+                // Derive filename from Content-Disposition if present, else build one
+                let filename = `weekly_report_${name.replace(/\s+/g, '_')}.pdf`;
+                const cd = res.headers.get('Content-Disposition') || '';
+                const match = cd.match(/filename="([^"]+)"/);
+                if (match) filename = match[1];
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+
+                if (btnEl) {
+                    btnEl.innerHTML = '<i class="fas fa-check"></i> Downloaded!';
+                    setTimeout(() => { btnEl.innerHTML = origHtml; btnEl.disabled = false; }, 2500);
+                }
+            } catch (err) {
+                console.error('Error generating weekly report:', err);
+                alert(`Could not generate the weekly report: ${err.message}`);
+                if (btnEl) { btnEl.innerHTML = origHtml; btnEl.disabled = false; }
+            }
+        }
+
+        // Legacy alias kept for compatibility
+        async function downloadLatestWeeklyReport(recipientId, name) {
+            await generateAndDownloadWeeklyReport(recipientId, name, null);
+        }
+
+        // ═══════════════════════════════════════════
+        //  DOCTORS / CARE TEAM SECTION
+        // ═══════════════════════════════════════════
+
+        async function fetchDoctors() {
+            const listEl = document.getElementById('doctorsList');
+            const countEl = document.getElementById('doctorCountBadge');
+            if (!listEl) return;
+            try {
+                const res = await fetch(`${API_BASE}/doctors`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('failed');
+                const data = await res.json();
+                // data.doctors = actual doctor records from DB
+                renderDoctors(data.doctors && data.doctors.length > 0 ? data.doctors : null);
+            } catch {
+                // Show placeholder if endpoint fails
+                renderDoctors(null);
+            }
+        }
+
+        function renderDoctors(doctors) {
+            const listEl = document.getElementById('doctorsList');
+            const countEl = document.getElementById('doctorCountBadge');
+            if (!listEl) return;
+
+            if (doctors && doctors.length > 0) {
+                if (countEl) countEl.textContent = doctors.length + ' doctor' + (doctors.length > 1 ? 's' : '');
+                listEl.innerHTML = doctors.map(d => {
+                    const initials = (d.name || 'Dr').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                    const avatarColors = ['#1e3a8a,#3b82f6','#0d9488,#14b8a6','#7c3aed,#a78bfa','#be185d,#ec4899','#b45309,#f59e0b'];
+                    const colorIdx = (d.id || 0) % avatarColors.length;
+                    const grad = avatarColors[colorIdx];
+                    return `
+                        <div class="doctor-card">
+                            <div class="doctor-avatar" style="background: linear-gradient(135deg, ${grad.split(',')[0]}, ${grad.split(',')[1]});">
+                                ${d.photo_url
+                                    ? `<img src="${d.photo_url}" alt="${d.name}" onerror="this.style.display='none'">`
+                                    : `<span style="font-weight:800;font-size:1.1rem;">${initials}</span>`
+                                }
+                            </div>
+                            <div class="doctor-info">
+                                <h4>${d.name || 'Unknown Doctor'}</h4>
+                                <p><i class="fas fa-stethoscope" style="margin-right:5px;"></i>${d.specialization || 'General Practitioner'} &middot; <i class="fas fa-envelope" style="margin-left:4px;margin-right:4px;"></i>${d.email || 'CareTaker.ai'}</p>
+                            </div>
+                            <span class="doctor-stat-badge doc-badge-patients">
+                                <i class="fas fa-user-md"></i>
+                                Doctor
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                // Show a styled placeholder "care team" card for the CareTaker.ai platform doctor
+                if (countEl) countEl.textContent = 'Active';
+                listEl.innerHTML = `
+                    <div class="doctor-card">
+                        <div class="doctor-avatar" style="background: linear-gradient(135deg, #0d9488, #14b8a6);">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="doctor-info">
+                            <h4>CareTaker.ai Medical Team</h4>
+                            <p><i class="fas fa-stethoscope" style="margin-right:5px;"></i>AI-Assisted Care &middot; Monitoring all recipients</p>
+                        </div>
+                        <span class="doctor-stat-badge doc-badge-patients">
+                            <i class="fas fa-heartbeat"></i>
+                            Active
+                        </span>
+                    </div>
+                    <div class="doctor-card">
+                        <div class="doctor-avatar" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="doctor-info">
+                            <h4>AI Health Advisor</h4>
+                            <p><i class="fas fa-robot" style="margin-right:5px;"></i>Gemini-Powered &middot; 24/7 Available</p>
+                        </div>
+                        <span class="doctor-stat-badge" style="background:#f3e8ff;color:#7c3aed;">
+                            <i class="fas fa-bolt"></i>
+                            AI Active
+                        </span>
+                    </div>
+                    <div style="text-align:center;padding:8px 0;font-size:0.8rem;color:var(--text-muted);">
+                        <i class="fas fa-info-circle" style="margin-right:4px;"></i>
+                        Assigned doctors will appear here once connected by your administrator.
+                    </div>
+                `;
+            }
+        }
+
+        function createRecipientCard(recipient) {
+            const card = document.createElement('div');
+            card.className = 'recipient-card';
+            card.dataset.recipientId = recipient.id || '';
+            const metaText = recipient.meta || `Age: ${recipient.age || '-'} &middot; ${recipient.gender || '-'} &middot; ${recipient.respiratory_condition_status ? 'Respiratory care' : 'General care'}`;
+            card.innerHTML = `<h5>${recipient.full_name}</h5><p>${metaText}</p>`;
+            card.addEventListener('click', () => selectRecipient(recipient.id || null, recipient.full_name));
+            return card;
+        }
+
+        function selectRecipient(id, name) {
+            selectedRecipientId = id;
+            if (id) {
+                localStorage.setItem('selectedRecipientId', id);
+            } else {
+                localStorage.removeItem('selectedRecipientId');
+            }
+            selectedRecipientName = name || 'All';
+            const recipient = recipientsCache.find(r => String(r.id) === String(id));
+
+            if (selectedRecipientEl) {
+                selectedRecipientEl.textContent = selectedRecipientName;
+            }
+            if (historyRecipientEl) {
+                historyRecipientEl.textContent = selectedRecipientName;
+            }
+
+            // Update Video Monitoring Link
+            const videoLink = document.getElementById('videoMonitoringLink');
+            if (videoLink) {
+                if (id) {
+                    videoLink.href = `video_monitoring.html?recipient_id=${id}&name=${encodeURIComponent(name || '')}`;
+                    videoLink.textContent = `Monitor ${name || 'Recipient'}`;
+                } else {
+                    videoLink.href = `video_monitoring.html`;
+                    videoLink.textContent = "Video Monitoring Dashboard";
+                }
+            }
+
+            // Fetch audio analytics
+            if (typeof fetchAudioAnalytics === 'function') {
+                fetchAudioAnalytics();
+            }
+
+            updateRecipientPanel();
+            highlightActiveCard();
+            fetchAndRenderRecordings();
+            clearReportSelection();
+            renderMedicalSummary();
+            fetchRecipientReports();
+
+            // Update Weather Widget
+            if (window.weatherWidget) {
+                window.weatherWidget.setRecipient(id);
+            }
+        }
+
+        function highlightActiveCard() {
+            document.querySelectorAll('.recipient-card').forEach(card => {
+                const cardId = card.dataset.recipientId || null;
+                if (!selectedRecipientId && !cardId) {
+                    card.classList.add('active');
+                } else if (selectedRecipientId && cardId && String(cardId) === String(selectedRecipientId)) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+        }
+
+        function updateRecipientPanel() {
+            if (!selectedRecipientId) {
+                recipientTitleEl.textContent = 'All recipients';
+                recipientMetaEl.textContent = 'Session will monitor every care recipient assigned to you.';
+                recipientBadgesEl.innerHTML = '';
+                if (profileLinkEl) profileLinkEl.style.display = 'none';
+                return;
+            }
+            const recipient = recipientsCache.find(r => String(r.id) === String(selectedRecipientId));
+            if (!recipient) return;
+
+            if (profileLinkEl) {
+                profileLinkEl.style.display = 'inline-block';
+                profileLinkEl.href = `featured_profile.html?recipient_id=${selectedRecipientId}`;
+            }
+            recipientTitleEl.textContent = recipient.full_name || 'Recipient';
+            recipientMetaEl.innerHTML = `
+                Email: <strong>${recipient.email || '—'}</strong><br>
+                Phone: <strong>${recipient.phone_number || '—'}</strong><br>
+                Blood Group: <strong>${recipient.blood_group || '—'}</strong> &nbsp;|&nbsp; 
+                Height: <strong>${recipient.height ? recipient.height + ' cm' : '—'}</strong> &nbsp;|&nbsp; 
+                Weight: <strong>${recipient.weight ? recipient.weight + ' kg' : '—'}</strong><br>
+                Emergency Contact: <strong>${recipient.emergency_contact || '—'}</strong>
+            `;
+            const badges = [
+                `Age ${recipient.age || 'â€”'}`,
+                recipient.gender || 'â€”',
+                recipient.respiratory_condition_status ? 'Respiratory care' : 'General care'
+            ];
+            recipientBadgesEl.innerHTML = badges.map(b => `<span class="tag">${b}</span>`).join('');
+        }
+
+
+
+        function getSelectedRecipient() {
+            if (!selectedRecipientId) return null;
+            return recipientsCache.find(r => String(r.id) === String(selectedRecipientId)) || null;
+        }
+
+        function updateReportControlsState() {
+            const hasRecipient = Boolean(selectedRecipientId);
+            if (refreshReportsBtn) refreshReportsBtn.disabled = !hasRecipient || reportsRefreshing;
+            if (regenerateSummaryBtn) regenerateSummaryBtn.disabled = !hasRecipient || summaryGenerating;
+            // Show / hide upload area
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) uploadArea.style.display = hasRecipient ? 'block' : 'none';
+        }
+
+        function renderMedicalSummary(statusMessage = '') {
+            const recipient = getSelectedRecipient();
+            const container = document.getElementById('medicalInsightsContainer');
+            const summaryStatusEl = document.getElementById('summaryStatus');
+
+            if (statusMessage && summaryStatusEl) {
+                summaryStatusEl.textContent = statusMessage;
+                // If we are actively generating, show a spinner in the main container
+                if (statusMessage.includes('Generating') && container) {
+                    container.innerHTML = `
+                        <div style="text-align:center; padding: 60px 20px;">
+                            <div class="spinner" style="margin: 0 auto 15px;"></div>
+                            <p class="muted">AI is analyzing reports and health history…</p>
+                        </div>`;
+                }
+            }
+
+            if (!recipient) {
+                if (container) container.innerHTML = `
+                    <div style="text-align:center; padding: 60px 20px; color: var(--muted);">
+                        <div style="font-size: 2.5rem; margin-bottom: 15px; opacity: 0.5;">ðŸ“‹</div>
+                        <p>No recipient selected.</p>
+                    </div>`;
+                return;
+            }
+
+            if (!recipient.report_summary) {
+                if (container) container.innerHTML = `
+                    <div style="text-align:center; padding: 60px 20px; color: var(--muted);">
+                        <div style="font-size: 2.5rem; margin-bottom: 15px; opacity: 0.5;">ðŸ”</div>
+                        <p>No summary available yet for this recipient.</p>
+                        <p style="font-size: 0.8rem; margin-top: 8px;">Upload a report or click "Regenerate Summary" to begin.</p>
+                    </div>`;
+                return;
+            }
+
+            // Use the professional formatter
+            renderFormattedInsights(recipient.report_summary, 'medicalInsightsContainer', true);
+            updateReportControlsState();
+        }
+
+        /**
+         * Robust Mind Map Parsing Engine
+         * Divides text into sections using strict header detection and point-based splitting.
+         */
+        function renderFormattedInsights(text, containerId, showEnv = true) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            // Add Visualization Infrastructure
+            const spine = document.createElement('div');
+            spine.className = 'mind-map-spine';
+            container.appendChild(spine);
+
+            const hub = document.createElement('div');
+            hub.className = 'mind-map-hub';
+            hub.innerHTML = '<span style="font-size:1.5rem;">ðŸ§ </span>';
+            container.appendChild(hub);
+
+            const grid = document.createElement('div');
+            grid.className = 'insight-grid';
+
+            const sections = [];
+            const lines = text.split('\n');
+            let currentSection = null;
+            let envData = { temp: '', hum: '', aqi: '' };
+            let hasEnvData = false;
+
+            const clinicalHeaders = [
+                'DIAGNOSES', 'DIAGNOSIS', 'SYMPTOMS', 'SYMPTOM', 'VITALS', 'VITAL', 'MEDICATIONS', 'MEDICATION', 'MEDS',
+                'CARE PLAN', 'FOLLOW-UP', 'ADVICE', 'LABS', 'LAB', 'HISTORY', 'TIMELINE', 'TRENDS', 'PLAN', 'MANAGEMENT'
+            ];
+
+            lines.forEach(line => {
+                // Pre-process: Strip bold, trim, remove markers
+                let trimmed = line.trim().replace(/\*\*/g, '').replace(/^###\s+/, '');
+                if (!trimmed || trimmed.includes('START_') || trimmed.includes('END_') || trimmed.toUpperCase().includes('CLINICAL SUMMARY')) return;
+
+                // 1. Environmental Threshold Detection
+                if (trimmed.includes('Temperature Range') || (trimmed.toLowerCase().includes('recommended') && trimmed.toLowerCase().includes('temperature'))) {
+                    envData.temp = trimmed.split(':', 2)[1]?.trim() || trimmed;
+                    hasEnvData = true;
+                    return;
+                }
+                if (trimmed.includes('Humidity Range') || (trimmed.toLowerCase().includes('recommended') && trimmed.toLowerCase().includes('humidity'))) {
+                    envData.hum = trimmed.split(':', 2)[1]?.trim() || trimmed;
+                    hasEnvData = true;
+                    return;
+                }
+                if (trimmed.includes('Air Quality') || (trimmed.toLowerCase().includes('recommended') && trimmed.toLowerCase().includes('air quality'))) {
+                    envData.aqi = trimmed.split(':', 2)[1]?.trim() || trimmed;
+                    hasEnvData = true;
+                    return;
+                }
+
+                // 2. Section Header Detection
+                // Supports bullets: â€¢, âˆ™, Â·, *, + OR keywords followed by colons
+                const hasBullet = /^[â€¢âˆ™Â·\*\+]\s*/.test(trimmed);
+                const hasKeyword = clinicalHeaders.some(h => trimmed.toUpperCase().includes(h));
+                const isHeader = (hasBullet && trimmed.includes(':')) || (trimmed.includes(':') && hasKeyword && !trimmed.startsWith('-'));
+
+                if (isHeader) {
+                    const cleanHeader = trimmed.replace(/^[â€¢âˆ™Â·\*\+]\s*/, '').trim();
+                    const colonIdx = cleanHeader.indexOf(':');
+                    const title = cleanHeader.substring(0, colonIdx).trim();
+                    const remainder = cleanHeader.substring(colonIdx + 1).trim();
+
+                    if (title.length > 2 && title.length < 40) {
+                        currentSection = {
+                            title: title,
+                            points: remainder ? [remainder] : [],
+                            type: title.toLowerCase()
+                        };
+                        sections.push(currentSection);
+                        return;
+                    }
+                }
+
+                // 3. Point Capture
+                if (currentSection) {
+                    const point = trimmed.replace(/^[â€¢âˆ™Â·\*\+\-]\s*/, '').trim();
+                    if (point && !point.toUpperCase().includes('ENVIRONMENTAL RECOMMENDATIONS')) {
+                        // Avoid duplicates of the title itself
+                        if (point !== currentSection.title && !point.startsWith(currentSection.title + ':')) {
+                            currentSection.points.push(point);
+                        }
+                    }
+                }
+            });
+
+            // 4. Render Category Cards
+            if (sections.length > 0) {
+                sections.forEach(sec => {
+                    const rawPoints = Array.from(new Set(sec.points.filter(p => p.length > 1)));
+                    if (!rawPoints.length) return;
+
+                    const card = document.createElement('div');
+                    let typeClass = 'careplan';
+                    let icon = 'ðŸ“';
+
+                    const titleLower = sec.title.toLowerCase();
+                    if (titleLower.includes('diagnos')) { typeClass = 'diagnoses'; icon = 'ðŸ¥'; }
+                    else if (titleLower.includes('symptom') || titleLower.includes('history')) { typeClass = 'symptoms'; icon = 'ðŸ¤’'; }
+                    else if (titleLower.includes('vital') || titleLower.includes('lab')) { typeClass = 'vitals'; icon = 'ðŸ“Š'; }
+                    else if (titleLower.includes('medication')) { typeClass = 'meds'; icon = 'ðŸ’Š'; }
+                    else if (titleLower.includes('plan') || titleLower.includes('advice')) { typeClass = 'careplan'; icon = 'ðŸ“‹'; }
+
+                    let processedPoints = [];
+                    rawPoints.forEach(p => {
+                        if (p.includes(';')) {
+                            p.split(';').forEach(s => { if (s.trim()) processedPoints.push(s.trim()); });
+                        } else if (p.length > 65 && p.includes('. ')) {
+                            p.split(/\.\s+/).forEach(s => { if (s.trim()) processedPoints.push(s.trim()); });
+                        } else {
+                            processedPoints.push(p);
+                        }
+                    });
+
+                    card.className = `insight-card ${typeClass}`;
+                    card.innerHTML = `
+                        <div class="insight-header"><div class="insight-icon">${icon}</div>${sec.title}</div>
+                        <div class="insight-content"><ul>${processedPoints.map(p => `<li>${p}</li>`).join('')}</ul></div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } else if (text && text.length > 10) {
+                // Fallback for unstructured text (e.g., Gemini didn't use headers or returned an error message)
+                const fallbackCard = document.createElement('div');
+                fallbackCard.className = 'insight-card careplan';
+                fallbackCard.style.gridColumn = '1 / -1';
+                fallbackCard.innerHTML = `
+                    <div class="insight-header"><div class="insight-icon">â„¹ï¸</div>Clinical Summary</div>
+                    <div class="insight-content" style="white-space: pre-line; line-height: 1.6;">${text}</div>
+                `;
+                grid.appendChild(fallbackCard);
+            }
+
+            container.appendChild(grid);
+
+            // 5. Render Environmental Monitoring dashboard - Only if enabled
+            if (showEnv && hasEnvData) {
+                const envDash = document.createElement('div');
+                envDash.className = 'env-dashboard';
+                envDash.style.zIndex = "2";
+                envDash.style.position = "relative";
+                envDash.innerHTML = `
+                    <div class="insight-header"><div class="insight-icon">ðŸ </div>Optimized Health Environment</div>
+                    <div class="env-items">
+                        <div class="env-stat"><label>Temperature</label><span>${envData.temp}</span></div>
+                        <div class="env-stat"><label>Humidity</label><span>${envData.hum}</span></div>
+                        <div class="env-stat"><label>Air Quality</label><span>${envData.aqi}</span></div>
+                    </div>
+                `;
+                container.appendChild(envDash);
+            }
+        }
+
+        function parseSummaryText(text) {
+            // Helper to create a section
+            const createSection = (title, icon, content) => {
+                return `
+                    <div class="summary-section">
+                        <div class="summary-section-header">
+                            <i class="${icon}"></i>
+                            <h4>${title}</h4>
+                        </div>
+                        <div class="summary-content">${content}</div>
+                    </div>
+                `;
+            };
+
+            // Parse sections
+            // Extract recommendations (numbered 1-3)
+            let recommendations = '';
+            const recMatch = text.match(/(\d+\.\s*Recommended[\s\S]*?)(?=\n\n|$)/);
+            let summaryText = text;
+
+            if (recMatch) {
+                const recText = recMatch[1];
+                const lines = recText.split('\n');
+                let temp = '-', hum = '-', aqi = '-';
+                lines.forEach(line => {
+                    const lowerLine = line.toLowerCase();
+                    if (lowerLine.includes('temperature')) temp = line.split(':')[1]?.trim() || line.split(')').pop().trim();
+                    if (lowerLine.includes('humidity')) hum = line.split(':')[1]?.trim() || line.split(')').pop().trim();
+                    if (lowerLine.includes('air quality')) aqi = line.split(':')[1]?.trim() || line.split(')').pop().trim();
+                });
+                recommendations = `
+                    <div class="summary-thresholds">
+                        <div class="threshold-pill">
+                            <i class="fas fa-thermometer-half"></i>
+                            <span class="label">Temperature</span>
+                            <span class="value">${temp}</span>
+                        </div>
+                        <div class="threshold-pill">
+                            <i class="fas fa-tint"></i>
+                            <span class="label">Humidity</span>
+                            <span class="value">${hum}</span>
+                        </div>
+                        <div class="threshold-pill">
+                            <i class="fas fa-wind"></i>
+                            <span class="label">Air Quality</span>
+                            <span class="value">${aqi}</span>
+                        </div>
+                    </div>
+                `;
+                summaryText = text.replace(recText, '').trim();
+            }
+
+            // Split into sections using bullet points or headings
+            const sectionMap = [
+                { key: 'Diagnoses', icon: 'fas fa-stethoscope', title: 'Diagnoses' },
+                { key: 'Symptoms / Complaints', icon: 'fas fa-user-md', title: 'Symptoms' },
+                { key: 'Important Vitals', icon: 'fas fa-heartbeat', title: 'Key Vitals' },
+                { key: 'Medications', icon: 'fas fa-pills', title: 'Medications' },
+                { key: 'Follow-up Advice', icon: 'fas fa-clipboard-check', title: 'Follow-up' }
+            ];
+
+            let html = '<div class="summary-container">';
+
+            // Collect all indices and matched sections
+            const matchedSections = [];
+            sectionMap.forEach(s => {
+                const index = summaryText.indexOf(s.key);
+                if (index !== -1) {
+                    matchedSections.push({ ...s, index });
+                }
+            });
+
+            // Sort sections by their position in text
+            matchedSections.sort((a, b) => a.index - b.index);
+
+            matchedSections.forEach((s, i) => {
+                const start = s.index + s.key.length + 1; // +1 for colon
+                const end = i < matchedSections.length - 1 ? matchedSections[i + 1].index : summaryText.length;
+                let content = summaryText.substring(start, end).trim();
+
+                if (content) {
+                    // Extract bullet points
+                    const lines = content.split('\n')
+                        .map(l => l.trim().replace(/^[\-\â€¢\*\s]+/g, ''))
+                        .filter(l => l && !l.startsWith('Based on the')); // Filter out the transition sentence
+
+                    if (lines.length > 0) {
+                        const listHtml = `<ul class="summary-ul">${lines.map(l => `<li>${l}</li>`).join('')}</ul>`;
+                        html += createSection(s.title, s.icon, listHtml);
+                    }
+                }
+            });
+
+            if (recommendations) {
+                html += `
+                    <div class="summary-section full-width" style="border-top: 2px solid var(--accent);">
+                        <div class="summary-section-header">
+                            <i class="fas fa-leaf"></i>
+                            <h4>Care Environment</h4>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 12px;">AI-generated recommendations based on clinical diagnosis.</p>
+                        ${recommendations}
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        async function fetchRecipientReports() {
+            const recipient = getSelectedRecipient();
+            if (!recipient) {
+                if (reportsListEl) reportsListEl.innerHTML = '<p class="muted">Select a care recipient to list their medical reports.</p>';
+                reportsRefreshing = false;
+                updateReportControlsState();
+                return;
+            }
+            reportsRefreshing = true;
+            updateReportControlsState();
+            if (reportsListEl) reportsListEl.innerHTML = '<p class="muted">Loading reports...</p>';
+            try {
+                const res = await fetch(`${API_BASE}/recipients/${recipient.id}/reports`, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Failed to list reports');
+                const payload = await res.json();
+                currentRecipientReports = payload?.result?.reports || [];
+                sortAndRenderReports();
+            } catch (err) {
+                console.error('Error fetching medical reports', err);
+                if (reportsListEl) reportsListEl.innerHTML = '<p class="muted">Unable to load reports.</p>';
+            } finally {
+                reportsRefreshing = false;
+                updateReportControlsState();
+            }
+        }
+
+        let selectedReportId = null;
+
+        function sortAndRenderReports() {
+            const recipient = getSelectedRecipient();
+            if (!recipient) return;
+
+            const sortVal = reportSortOrderSelect ? reportSortOrderSelect.value : 'date_desc';
+            const sorted = [...currentRecipientReports].sort((a, b) => {
+                if (sortVal === 'date_desc') return new Date(b.uploaded_at) - new Date(a.uploaded_at);
+                if (sortVal === 'date_asc') return new Date(a.uploaded_at) - new Date(b.uploaded_at);
+                if (sortVal === 'name_asc') return a.filename.localeCompare(b.filename);
+                if (sortVal === 'name_desc') return b.filename.localeCompare(a.filename);
+                return 0;
+            });
+
+            renderReportsList(recipient.id, sorted);
+        }
+
+        if (reportSortOrderSelect) {
+            reportSortOrderSelect.addEventListener('change', () => sortAndRenderReports());
+        }
+
+        async function deleteMedicalReport(recipientId, reportId) {
+            if (!confirm('Are you sure you want to delete this report? This will also remove its associated AI insights.')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/recipients/${recipientId}/reports/${reportId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Delete failed');
+
+                showToast('Report deleted successfully');
+
+                if (selectedReportId === reportId) {
+                    clearReportSelection();
+                }
+
+                // Refresh the list
+                fetchRecipientReports();
+
+                // Automatically regenerate aggregate summary to reflect the removal
+                handleRegenerateSummary();
+            } catch (err) {
+                console.error('Delete error', err);
+                showToast('Failed to delete report', 'error');
+            }
+        }
+
+        function renderReportsList(recipientId, reports = []) {
+            if (!reportsListEl) return;
+            const countBadge = document.getElementById('reportsCountBadge');
+            if (!reports.length) {
+                reportsListEl.innerHTML = '<p class="muted">No reports uploaded yet. Use the upload area above to add one.</p>';
+                if (countBadge) countBadge.style.display = 'none';
+                return;
+            }
+            if (countBadge) {
+                countBadge.style.display = 'block';
+                countBadge.innerHTML = `<span class="tag" style="background:rgba(74,144,226,0.1); border-color:rgba(74,144,226,0.3); color:var(--accent); font-weight:700;">${reports.length} file${reports.length > 1 ? 's' : ''}</span>`;
+            }
+            reportsListEl.innerHTML = '';
+            reports.forEach(report => {
+                const card = document.createElement('div');
+                card.className = 'report-card';
+                card.dataset.reportId = report.id;
+                card.style.cursor = 'pointer';
+
+                const ext = (report.filename.split('.').pop() || '').toLowerCase();
+                const icon = ext === 'pdf' ? 'ðŸ“„' : ['png', 'jpg', 'jpeg'].includes(ext) ? 'ðŸ–¼ï¸' : 'ðŸ“';
+
+                card.innerHTML = `
+                    <h4 style="display:flex; align-items:center; gap:6px;">
+                        <span>${icon}</span>
+                        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${report.filename}">${report.filename}</span>
+                        <span class="report-select-indicator">Viewing</span>
+                    </h4>
+                    <div class="report-meta">Uploaded ${new Date(report.uploaded_at).toLocaleString()}</div>
+                `;
+
+                // Click card â†’ load its individual preview into the summary pane
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('button')) return; // let action buttons handle themselves
+                    selectReport(card, recipientId, report.id, report.filename);
+                });
+
+                const actions = document.createElement('div');
+                actions.className = 'report-actions';
+
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'ghost-btn';
+                downloadBtn.innerHTML = 'â¬‡ Download';
+                downloadBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadMedicalReport(recipientId, report.id, report.filename);
+                });
+
+                const refreshBtn = document.createElement('button');
+                refreshBtn.className = 'ghost-btn';
+                refreshBtn.innerHTML = 'ðŸ”„ Regenerate Analysis';
+                refreshBtn.style.padding = '4px 8px';
+                refreshBtn.style.fontSize = '0.7rem';
+                refreshBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectReport(card, recipientId, report.id, report.filename, true);
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'ghost-btn';
+                deleteBtn.innerHTML = 'ðŸ—‘ Delete';
+                deleteBtn.style.color = '#ef4444';
+                deleteBtn.style.padding = '4px 8px';
+                deleteBtn.style.fontSize = '0.7rem';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteMedicalReport(recipientId, report.id);
+                });
+
+                actions.appendChild(downloadBtn);
+                actions.appendChild(refreshBtn);
+                actions.appendChild(deleteBtn);
+                card.appendChild(actions);
+                reportsListEl.appendChild(card);
+            });
+        }
+
+        async function selectReport(cardEl, recipientId, reportId, filename, forceRefresh = false) {
+            // Deselect all
+            document.querySelectorAll('#reportsList .report-card').forEach(c => c.classList.remove('selected'));
+            cardEl.classList.add('selected');
+            selectedReportId = reportId;
+
+            const container = document.getElementById('medicalInsightsContainer');
+            const summaryStatusEl = document.getElementById('summaryStatus');
+            const typeLabel = document.getElementById('summaryTypeLabel');
+            const clearBtn = document.getElementById('clearReportSelectBtn');
+
+            // Show loading state in container
+            container.innerHTML = `
+                <div style="text-align:center; padding: 60px 20px;">
+                    <div class="spinner" style="margin: 0 auto 15px;"></div>
+                    <p class="muted">Generating clinical snapshot for "${filename}"â€¦</p>
+                </div>`;
+
+            summaryStatusEl.textContent = `Analyzing Report: ${filename}`;
+            typeLabel.textContent = 'Report Analysis';
+            typeLabel.style.color = '#7c3aed'; // distinct color for single report
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+
+            try {
+                const url = new URL(`${API_BASE}/recipients/${recipientId}/reports/${reportId}/extract_preview`);
+                if (forceRefresh) url.searchParams.append('force_refresh', 'true');
+
+                const res = await fetch(url.toString(), {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Preview fetch failed');
+                const payload = await res.json();
+                const preview = (payload?.result?.extracted_preview || '').trim();
+
+                if (preview) {
+                    renderFormattedInsights(preview, 'medicalInsightsContainer', false);
+                } else {
+                    container.innerHTML = '<p class="muted" style="text-align:center; padding:20px;">No clinical insights could be extracted from this document.</p>';
+                }
+            } catch (err) {
+                console.error('selectReport preview error', err);
+                container.innerHTML = '<p class="danger" style="text-align:center; padding:20px;">Unable to load insights for this report.</p>';
+            }
+        }
+
+        function clearReportSelection() {
+            selectedReportId = null;
+            document.querySelectorAll('#reportsList .report-card').forEach(c => c.classList.remove('selected'));
+
+            const typeLabel = document.getElementById('summaryTypeLabel');
+            if (typeLabel) {
+                typeLabel.textContent = 'Aggregate Summary';
+                typeLabel.style.color = 'var(--accent)';
+            }
+
+            const summaryStatusEl = document.getElementById('summaryStatus');
+            if (summaryStatusEl) summaryStatusEl.textContent = 'Browse insights from medical documentation.';
+
+            const clearBtn = document.getElementById('clearReportSelectBtn');
+            if (clearBtn) clearBtn.style.display = 'none';
+
+            // Re-render aggregate summary
+            renderMedicalSummary();
+        }
+
+        async function toggleReportPreview(card, recipientId, reportId) {
+            const previewArea = card.querySelector('.report-preview');
+            const isVisible = previewArea.style.display === 'block';
+            if (isVisible) {
+                previewArea.style.display = 'none';
+                previewArea.textContent = '';
+                return;
+            }
+            previewArea.style.display = 'block';
+            previewArea.textContent = 'Loading previewâ€¦';
+            try {
+                const res = await fetch(`${API_BASE}/recipients/${recipientId}/reports/${reportId}/extract_preview`, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Failed to fetch preview');
+                const payload = await res.json();
+                const preview = payload?.result?.extracted_preview?.trim();
+                previewArea.textContent = preview || 'No textual preview available for this report.';
+            } catch (err) {
+                console.error('Error fetching report preview', err);
+                previewArea.textContent = 'Unable to load preview.';
+            }
+        }
+
+        async function downloadMedicalReport(recipientId, reportId, filename) {
+            try {
+                const res = await fetch(`${API_BASE}/recipients/${recipientId}/reports/${reportId}/download`, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Failed to download report');
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = filename || `report_${reportId}`;
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+            } catch (err) {
+                console.error('Error downloading medical report', err);
+            }
+        }
+
+        async function handleRegenerateSummary() {
+            const recipient = getSelectedRecipient();
+            if (!recipient) return;
+            summaryGenerating = true;
+            updateReportControlsState();
+            renderMedicalSummary('Generating summaryâ€¦');
+            try {
+                const res = await fetch(`${API_BASE}/recipients/${recipient.id}/summarize`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Failed to generate summary');
+                const payload = await res.json();
+                const summary = payload?.result?.summary || '';
+                recipient.report_summary = summary;
+                renderMedicalSummary('Summary updated.');
+            } catch (err) {
+                console.error('Error regenerating summary', err);
+                summaryStatusEl.textContent = 'Unable to generate summary right now.';
+            } finally {
+                summaryGenerating = false;
+                updateReportControlsState();
+            }
+        }
+
+        // ---- Medical Report Upload Logic ----
+        document.addEventListener('DOMContentLoaded', function initUpload() {
+            const fileInput = document.getElementById('reportFileInput');
+            const uploadBtn = document.getElementById('uploadReportBtn');
+            const fileNameEl = document.getElementById('uploadFileName');
+            const progressWrap = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const dropZone = document.getElementById('uploadDropZone');
+
+            if (!fileInput) return; // not in DOM yet, skip
+
+            // Show chosen file name and enable upload button
+            fileInput.addEventListener('change', () => {
+                const file = fileInput.files[0];
+                if (file && selectedRecipientId) {
+                    fileNameEl.textContent = 'ðŸ“Ž ' + file.name;
+                    fileNameEl.style.display = 'block';
+                    uploadBtn.disabled = false;
+                } else {
+                    fileNameEl.style.display = 'none';
+                    uploadBtn.disabled = true;
+                }
+            });
+
+            // Drag-and-drop visual feedback
+            ['dragover', 'dragenter'].forEach(evt => {
+                dropZone.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'dragend', 'drop'].forEach(evt => {
+                dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover'));
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const file = e.dataTransfer?.files?.[0];
+                if (file && selectedRecipientId) {
+                    // Programmatically assign to the hidden input
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    fileInput.files = dt.files;
+                    fileNameEl.textContent = 'ðŸ“Ž ' + file.name;
+                    fileNameEl.style.display = 'block';
+                    uploadBtn.disabled = false;
+                } else if (!selectedRecipientId) {
+                    alert('Please select a specific care recipient first.');
+                }
+            });
+
+            uploadBtn.addEventListener('click', () => uploadReport());
+
+            async function uploadReport() {
+                const recipient = getSelectedRecipient();
+                if (!recipient) return;
+                const file = fileInput.files[0];
+                if (!file) return;
+
+                // --- UI: start state ---
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Uploadingâ€¦';
+                progressWrap.style.display = 'block';
+                progressBar.style.width = '30%';
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    // Animate progress bar while waiting
+                    const animTimer = setInterval(() => {
+                        const cur = parseFloat(progressBar.style.width) || 30;
+                        if (cur < 85) progressBar.style.width = (cur + 5) + '%';
+                    }, 300);
+
+                    const res = await fetch(`${API_BASE}/recipients/${recipient.id}/reports`, {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token },
+                        body: formData
+                    });
+
+                    clearInterval(animTimer);
+                    progressBar.style.width = '100%';
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({ detail: 'Upload failed' }));
+                        throw new Error(err.detail || 'Upload failed');
+                    }
+
+                    showToast('âœ“ Report uploaded successfully!', 'success');
+
+                    // Reset file input
+                    resetUploadUI();
+
+                    // Refresh the list and regenerate summary
+                    await fetchRecipientReports();
+                    await handleRegenerateSummary();
+
+                } catch (err) {
+                    console.error('Upload error', err);
+                    progressBar.style.width = '100%';
+                    progressBar.style.background = 'linear-gradient(90deg, var(--danger), #ff6b6b)';
+                    showToast('âœ• ' + (err.message || 'Upload failed'), 'error');
+                    setTimeout(() => resetUploadUI(), 2000);
+                }
+            }
+
+            function resetUploadUI() {
+                fileInput.value = '';
+                fileNameEl.style.display = 'none';
+                fileNameEl.textContent = '';
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'â¬† Upload Report';
+                progressBar.style.width = '0%';
+                progressBar.style.background = 'linear-gradient(90deg, var(--accent), var(--accent-2))';
+                progressWrap.style.display = 'none';
+            }
+        });
+
+
+        // ---- Toast helper ----
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('uploadToast');
+            const iconEl = document.getElementById('toastIcon');
+            const msgEl = document.getElementById('toastMessage');
+            if (!toast) return;
+
+            toast.className = type;  // sets .success or .error for icon color
+            iconEl.textContent = type === 'success' ? 'âœ“' : 'âœ•';
+            msgEl.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // ---- Audio monitoring logic (adapted from dashboard) ----
+        let audioContext, analyser, dataArray;
+        let recognitionActive = false;
+        let audioStream = null;
+        let processorNode = null;
+        let silentGainNode = null;
+        let pcmBuffer = [];
+        let pcmBufferLength = 0;
+        const PCM_BUFFER_SECONDS = 6;
+        const MIN_RECORDING_DURATION = 4000;
+        let coughDetectionActive = false;
+        let coughStartTime = null;
+        let coughRecordingTimeout = null;
+        let coughCount = 0;
+        let snoreDetectionActive = false;
+        let snoreStartTime = null;
+        let snoreRecordingTimeout = null;
+        let snoreCount = 0;
+        const AUTO_DOWNLOAD = false;
+        const startBtn = document.getElementById('startBtn');
+        const statusEl = document.getElementById('status');
+        const labelContainer = document.getElementById('label-container');
+
+        if (startBtn) {
+            startBtn.addEventListener('click', toggleRecording);
+        }
+
+        async function toggleRecording() {
+            if (!recognitionActive) {
+                await initRecognizer();
+                startBtn.textContent = 'Stop Listening';
+                recognitionActive = true;
+            } else {
+                stopRecording();
+                startBtn.textContent = 'Start Listening';
+                recognitionActive = false;
+            }
+        }
+
+        async function initRecognizer() {
+            const MODEL_BASE = API_BASE + '/model';
+            const recognizer = speechCommands.create('BROWSER_FFT', undefined, MODEL_BASE + '/model.json', MODEL_BASE + '/metadata.json');
+            try {
+                await recognizer.ensureModelLoaded();
+                labelContainer.innerHTML = '';
+                const labels = recognizer.wordLabels();
+                labels.forEach(() => labelContainer.appendChild(document.createElement('div')));
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 44100 } });
+                const source = audioContext.createMediaStreamSource(audioStream);
+                startContinuousRecording(source);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                source.connect(analyser);
+                drawWaveform();
+
+                const labelMap = {};
+                labels.forEach((label, index) => {
+                    labelMap[label.toLowerCase()] = index;
+                });
+
+                const coughIndex = labelMap['cough'] !== undefined ? labelMap['cough'] : -1;
+                const snoreIndex = labelMap['snore'] !== undefined ? labelMap['snore'] : -1;
+                const detectionThreshold = 0.65;
+
+                recognizer.listen(result => {
+                    const scores = result.scores;
+                    scores.forEach((score, i) => {
+                        if (labelContainer.childNodes[i]) {
+                            labelContainer.childNodes[i].textContent = `${labels[i]}: ${score.toFixed(2)}`;
+                        }
+                    });
+
+                    const coughScore = coughIndex >= 0 ? scores[coughIndex] : 0;
+                    const snoreScore = snoreIndex >= 0 ? scores[snoreIndex] : 0;
+
+                    if (!coughDetectionActive && !snoreDetectionActive) {
+                        statusEl.textContent = `Listeningâ€¦ (Cough: ${coughScore.toFixed(2)} | Snore: ${snoreScore.toFixed(2)})`;
+                        statusEl.style.color = '#38bdf8';
+                    }
+
+                    if (coughScore >= detectionThreshold) {
+                        addSessionPrediction({
+                            type: 'cough',
+                            score: coughScore,
+                            timestamp: Date.now(),
+                            recipient_id: selectedRecipientId,
+                            recipient_name: selectedRecipientName
+                        });
+
+                        if (!coughDetectionActive) {
+                            coughDetectionActive = true;
+                            coughStartTime = Date.now();
+                            coughCount++;
+                            document.getElementById('coughCount').textContent = coughCount;
+                            statusEl.textContent = `ðŸš¨ Cough #${coughCount} detected! (${coughScore.toFixed(2)}) - Recordingâ€¦`;
+                            statusEl.style.color = '#fb7185';
+                            if (coughRecordingTimeout) clearTimeout(coughRecordingTimeout);
+                            coughRecordingTimeout = setTimeout(() => saveDetectionRecording('cough', coughScore), MIN_RECORDING_DURATION);
+                        } else {
+                            const elapsed = Date.now() - coughStartTime;
+                            if (elapsed < MIN_RECORDING_DURATION) {
+                                if (coughRecordingTimeout) clearTimeout(coughRecordingTimeout);
+                                coughRecordingTimeout = setTimeout(
+                                    () => saveDetectionRecording('cough', coughScore),
+                                    MIN_RECORDING_DURATION - elapsed
+                                );
+                            }
+                        }
+                    }
+
+                    if (snoreScore >= detectionThreshold) {
+                        addSessionPrediction({
+                            type: 'snore',
+                            score: snoreScore,
+                            timestamp: Date.now(),
+                            recipient_id: selectedRecipientId,
+                            recipient_name: selectedRecipientName
+                        });
+
+                        if (!snoreDetectionActive) {
+                            snoreDetectionActive = true;
+                            snoreStartTime = Date.now();
+                            snoreCount++;
+                            document.getElementById('snoreCount').textContent = snoreCount;
+                            statusEl.textContent = `ðŸ˜´ Snore #${snoreCount} detected! (${snoreScore.toFixed(2)}) - Recordingâ€¦`;
+                            statusEl.style.color = '#a78bfa';
+                            if (snoreRecordingTimeout) clearTimeout(snoreRecordingTimeout);
+                            snoreRecordingTimeout = setTimeout(() => saveDetectionRecording('snore', snoreScore), MIN_RECORDING_DURATION);
+                        } else {
+                            const elapsed = Date.now() - snoreStartTime;
+                            if (elapsed < MIN_RECORDING_DURATION) {
+                                if (snoreRecordingTimeout) clearTimeout(snoreRecordingTimeout);
+                                snoreRecordingTimeout = setTimeout(
+                                    () => saveDetectionRecording('snore', snoreScore),
+                                    MIN_RECORDING_DURATION - elapsed
+                                );
+                            }
+                        }
+                    }
+                }, {
+                    includeSpectrogram: true,
+                    overlapFactor: 0.5,
+                    invokeCallbackOnNoiseAndUnknown: true,
+                    probabilityThreshold: 0.5
+                });
+
+                statusEl.textContent = 'Listening for coughs and snoresâ€¦';
+            } catch (err) {
+                console.error('Error init audio:', err);
+                statusEl.textContent = `Error: ${err.message}`;
+                statusEl.style.color = '#fb7185';
+            }
+        }
+
+        function startContinuousRecording(source) {
+            pcmBuffer = [];
+            pcmBufferLength = 0;
+            const bufferSize = 4096;
+            const channelCount = source.channelCount || 1;
+            const maxSamples = audioContext.sampleRate * PCM_BUFFER_SECONDS;
+
+            processorNode = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
+            processorNode.onaudioprocess = (event) => {
+                const inputBuffer = event.inputBuffer;
+                const chunkChannels = [];
+                for (let ch = 0; ch < inputBuffer.numberOfChannels; ch++) {
+                    const channelData = new Float32Array(inputBuffer.length);
+                    channelData.set(inputBuffer.getChannelData(ch));
+                    chunkChannels.push(channelData);
+                }
+                pcmBuffer.push({ channels: chunkChannels, length: inputBuffer.length });
+                pcmBufferLength += inputBuffer.length;
+
+                while (pcmBufferLength > maxSamples && pcmBuffer.length > 0) {
+                    const removed = pcmBuffer.shift();
+                    pcmBufferLength -= removed.length;
+                }
+            };
+
+            silentGainNode = audioContext.createGain();
+            silentGainNode.gain.value = 0;
+            source.connect(processorNode);
+            processorNode.connect(silentGainNode);
+            silentGainNode.connect(audioContext.destination);
+        }
+
+        async function saveDetectionRecording(type, score) {
+            if (!pcmBuffer.length) return;
+
+            const wavBlob = encodeWAV(pcmBuffer, 1, audioContext.sampleRate);
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `${type}_${type === 'cough' ? coughCount : snoreCount}_${timestamp}.wav`;
+
+            // Upload to server
+            const formData = new FormData();
+            formData.append('file', wavBlob, filename);
+            formData.append('type', type);
+            formData.append('score', score);
+            if (selectedRecipientId) {
+                formData.append('care_recipient_id', selectedRecipientId);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/recordings/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to upload recording');
+                }
+
+                const data = await response.json();
+                console.log(`${type} recording saved:`, data);
+
+                // Update UI
+                const url = URL.createObjectURL(wavBlob);
+                showRecording(filename, url);
+
+            } catch (error) {
+                console.error(`Error saving ${type} recording:`, error);
+            } finally {
+                // Reset state for the specific type
+                if (type === 'cough') {
+                    coughDetectionActive = false;
+                } else if (type === 'snore') {
+                    snoreDetectionActive = false;
+                }
+
+                // Only clear buffers if neither detection is active
+                if (!coughDetectionActive && !snoreDetectionActive) {
+                    pcmBuffer = [];
+                    pcmBufferLength = 0;
+                    statusEl.textContent = 'Listeningâ€¦';
+                    statusEl.style.color = '#38bdf8';
+                }
+            }
+        }
+
+        function startWaveAnimation() {
+            drawWaveform();
+        }
+
+        function drawWaveform() {
+            requestAnimationFrame(drawWaveform);
+            const canvas = document.getElementById('waveCanvas');
+            const ctx = canvas.getContext('2d');
+            if (!analyser) return;
+            analyser.getByteTimeDomainData(dataArray);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#38bdf8';
+            ctx.beginPath();
+            const sliceWidth = canvas.width * 1.0 / analyser.frequencyBinCount;
+            let x = 0;
+            for (let i = 0; i < analyser.frequencyBinCount; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * canvas.height / 2;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+        }
+
+        function stopRecording() {
+            if (processorNode) { processorNode.disconnect(); processorNode.onaudioprocess = null; processorNode = null; }
+            if (silentGainNode) { silentGainNode.disconnect(); silentGainNode = null; }
+            if (coughRecordingTimeout) clearTimeout(coughRecordingTimeout);
+            if (snoreRecordingTimeout) clearTimeout(snoreRecordingTimeout);
+            if (audioStream) audioStream.getTracks().forEach(track => track.stop());
+            if (audioContext && audioContext.state !== 'closed') audioContext.close();
+            pcmBuffer = [];
+            pcmBufferLength = 0;
+            coughDetectionActive = false;
+            snoreDetectionActive = false;
+            statusEl.textContent = 'Stopped';
+            statusEl.style.color = '#fb7185';
+        }
+
+        function addSessionPrediction(pred) {
+            const emoji = pred.type === 'cough' ? 'ðŸ¤§' : pred.type === 'snore' ? 'ðŸ˜´' : 'ðŸ”Š';
+            pred.displayText = `${emoji} ${(pred.score * 100).toFixed(0)}% ${pred.type}${pred.recipient_name ? ` (${pred.recipient_name})` : ''}`;
+
+            sessionPredictions.unshift(pred);
+            if (sessionPredictions.length > 200) sessionPredictions.pop();
+            renderSessionPredictions();
+        }
+
+        function renderSessionPredictions() {
+            const el = document.getElementById('sessionPredictions');
+            el.innerHTML = '';
+            if (!sessionPredictions.length) {
+                el.innerHTML = '<p class="muted">No predictions yet in this session.</p>';
+                return;
+            }
+
+            const groupedPredictions = {
+                cough: [],
+                snore: [],
+                other: []
+            };
+
+            sessionPredictions.slice(0, 100).forEach(pred => {
+                const type = pred.type || 'other';
+                if (groupedPredictions[type] !== undefined) {
+                    groupedPredictions[type].push(pred);
+                } else {
+                    groupedPredictions.other.push(pred);
+                }
+            });
+
+            const sections = [
+                { type: 'cough', title: '😷 Coughs', predictions: groupedPredictions.cough },
+                { type: 'snore', title: '😴 Snores', predictions: groupedPredictions.snore },
+                { type: 'other', title: '🔊 Other Sounds', predictions: groupedPredictions.other }
+            ];
+
+            sections.forEach(section => {
+                if (section.predictions.length === 0) return;
+
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'prediction-section';
+                sectionEl.innerHTML = `<h4 style="margin: 16px 0 8px; color: var(--accent);">${section.title} (${section.predictions.length})</h4>`;
+
+                section.predictions.slice(0, 10).forEach(pred => {
+                    const item = document.createElement('div');
+                    item.className = 'session-item';
+                    const time = new Date(pred.timestamp).toLocaleTimeString();
+                    const score = (pred.score * 100).toFixed(0);
+                    item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
+                        <span>${time}</span>
+                        <span>${score}% confidence</span>
+                    </div>
+                `;
+                    sectionEl.appendChild(item);
+                });
+
+                if (section.predictions.length > 10) {
+                    const moreEl = document.createElement('div');
+                    moreEl.className = 'muted';
+                    moreEl.style.textAlign = 'center';
+                    moreEl.style.padding = '8px 0';
+                    moreEl.textContent = `+${section.predictions.length - 10} more`;
+                    sectionEl.appendChild(moreEl);
+                }
+
+                el.appendChild(sectionEl);
+            });
+        }
+
+        async function uploadRecording(blob, filename, care_recipient_id = null) {
+            const form = new FormData();
+            const file = new File([blob], filename, { type: 'audio/wav' });
+            form.append('file', file);
+            if (care_recipient_id) {
+                form.append('care_recipient_id', care_recipient_id);
+            }
+            const res = await fetch(API_BASE + '/recordings/upload', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: form
+            });
+            if (!res.ok) {
+                const body = await res.text();
+                console.error('Upload failed', res.status, body);
+                return null;
+            }
+            return res.json();
+        }
+
+        async function fetchAndRenderRecordings() {
+            const container = document.getElementById('recordings-container');
+            if (!container) return; // Element removed, skip
+            container.innerHTML = '';
+            try {
+                let url = API_BASE + '/recordings/my';
+                if (selectedRecipientId) url += '?care_recipient_id=' + encodeURIComponent(selectedRecipientId);
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Failed to list recordings');
+                const data = await res.json();
+                if (!data.recordings || !data.recordings.length) {
+                    container.innerHTML = '<p class="muted">No recordings yet.</p>';
+                    return;
+                }
+                data.recordings.forEach(rec => {
+                    const div = document.createElement('div');
+                    div.className = 'history-card';
+                    div.innerHTML = `
+                    <h4>${rec.filename}</h4>
+                    <div class="meta">${new Date(rec.created_at).toLocaleString()}${rec.care_recipient_id ? ' • Recipient: ' + rec.care_recipient_id : ''}</div>
+                `;
+                    const controls = document.createElement('div');
+                    controls.style.marginTop = '12px';
+                    const playBtn = document.createElement('button');
+                    playBtn.className = 'ghost-btn';
+                    playBtn.textContent = 'Play';
+                    playBtn.style.marginRight = '8px';
+                    playBtn.addEventListener('click', () => playRecording(rec.id));
+                    const dlBtn = document.createElement('button');
+                    dlBtn.className = 'ghost-btn';
+                    dlBtn.textContent = 'Download';
+                    dlBtn.addEventListener('click', () => downloadRecording(rec.id, rec.filename));
+                    controls.appendChild(playBtn);
+                    controls.appendChild(dlBtn);
+                    div.appendChild(controls);
+                    container.appendChild(div);
+                });
+            } catch (err) {
+                console.error('Error fetching recordings', err);
+                container.innerHTML = '<p class="muted">Unable to load recordings.</p>';
+            }
+        }
+
+        async function playRecording(id) {
+            try {
+                const res = await fetch(`${API_BASE}/recordings/${id}/download`, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Failed to fetch recording');
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const audio = document.createElement('audio');
+                audio.src = url;
+                audio.controls = true;
+                audio.autoplay = true;
+                const container = document.getElementById('recordings-container');
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(audio);
+                container.insertBefore(wrapper, container.firstChild);
+            } catch (err) {
+                console.error('Error playing recording', err);
+            }
+        }
+
+        async function downloadRecording(id, filename) {
+            try {
+                const res = await fetch(`${API_BASE}/recordings/${id}/download`, {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Failed to fetch recording for download');
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || `recording_${id}.wav`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+            } catch (err) {
+                console.error('Error downloading recording', err);
+            }
+        }
+
+        function showRecording(filename, url, mimeType = 'audio/wav') {
+            const container = document.getElementById('recordings-container');
+            const div = document.createElement('div');
+            div.className = 'history-card';
+            div.innerHTML = `
+            <h4>${filename}</h4>
+            <div class="meta">Local session • ${selectedRecipientName}</div>
+            <audio controls style="width:100%;margin-top:12px;">
+                <source src="${url}" type="${mimeType}">
+            </audio>
+        `;
+            container.prepend(div);
+        }
+
+        function triggerDownload(url, filename) {
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); }, 0);
+        }
+
+        // ==============================
+        // Video / Emotion Monitoring & Fall Detection
+        // ==============================
+
+        // DOM elements for fall detection
+        const videoUpload = document.getElementById('videoUpload');
+        const fallDetectionResults = document.getElementById('fallDetectionResults');
+        const fallDetectionStatus = document.getElementById('fallDetectionStatus');
+        const fallDetectionOutput = document.getElementById('fallDetectionOutput');
+
+        // Fall detection API endpoint
+        const FALL_DETECTION_API = `${API_BASE}/api/fall-detection`;
+
+        // Initialize video monitoring button
+        if (startEmotionMonitorBtn) {
+            startEmotionMonitorBtn.addEventListener('click', toggleEmotionMonitoring);
+        }
+
+        // Handle video file upload for fall detection
+        if (videoUpload) {
+            videoUpload.addEventListener('change', handleVideoUpload);
+        }
+
+        /**
+         * Handles the video file upload for fall detection
+         * @param {Event} event - The file input change event
+         */
+        async function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Show loading state
+            fallDetectionResults.style.display = 'block';
+            fallDetectionStatus.textContent = 'Processing video...';
+            fallDetectionStatus.style.color = '#38bdf8';
+            fallDetectionOutput.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('file', file);  // Changed from 'video' to 'file' to match backend
+
+            // Add recipient ID if one is selected
+            if (selectedRecipientId) {
+                formData.append('recipient_id', selectedRecipientId);
+            }
+
+            try {
+                // First, upload the video for processing
+                const response = await fetch(`${FALL_DETECTION_API}/process-video`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                    // Don't set Content-Type header - let the browser set it with the boundary
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.detail || 'Failed to process video');
+                }
+
+                const result = await response.json();
+
+                // If we get here, the request was successful
+                fallDetectionStatus.textContent = 'Video processed successfully!';
+                fallDetectionStatus.style.color = '#10b981';
+
+                // Show the results
+                if (result.falls_detected && result.falls_detected.length > 0) {
+                    fallDetectionOutput.innerHTML = `
+                    <div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                        <p class="font-bold">âš ï¸ Fall Detected!</p>
+                        <p>Falls detected: ${result.falls_detected.length}</p>
+                        <p>Confidence: ${(result.average_confidence * 100).toFixed(1)}%</p>
+                    </div>
+                `;
+
+                    // If we have a processed video URL, show a link to view it
+                    if (result.processed_video_url) {
+                        const videoUrl = new URL(result.processed_video_url, window.location.origin).href;
+                        fallDetectionOutput.innerHTML += `
+                        <div class="mt-4">
+                            <a href="${videoUrl}" target="_blank" 
+                               class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                View Processed Video
+                            </a>
+                        </div>
+                    `;
+                    }
+                } else {
+                    fallDetectionOutput.innerHTML = `
+                    <div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                        <p>✅ No falls detected in the video.</p>
+                    </div>
+                `;
+                }
+            } catch (error) {
+                console.error('Error processing video:', error);
+                fallDetectionStatus.textContent = `Error: ${error.message}`;
+                fallDetectionStatus.style.color = '#ef4444';
+            } finally {
+                // Reset the file input
+                event.target.value = '';
+            }
+        }
+
+        /**
+         * Helper function to download the processed video
+         * @param {string} url - The URL of the video to download
+         * @param {string} filename - The filename to use for the downloaded file
+         */
+        function downloadVideo(url, filename) {
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                if (a.parentNode) a.parentNode.removeChild(a);
+            }, 0);
+        }
+
+        async function toggleEmotionMonitoring() {
+            if (!emotionMonitoringActive) {
+                await startEmotionMonitoring();
+            } else {
+                stopEmotionMonitoring();
+            }
+        }
+
+        async function startEmotionMonitoring() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    emotionStatusEl.textContent = 'Status: Camera not supported in this browser';
+                    emotionStatusEl.style.color = '#fb7185';
+                    return;
+                }
+
+                emotionStatusEl.textContent = 'Status: Requesting camera...';
+                emotionStatusEl.style.color = '#38bdf8';
+
+                emotionStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+                emotionVideoEl.srcObject = emotionStream;
+
+                emotionMonitoringActive = true;
+                startEmotionMonitorBtn.textContent = 'Stop Video Monitoring';
+                emotionStatusEl.textContent = 'Status: Camera on - analyzingâ€¦';
+
+                if (emotionCaptureInterval) clearInterval(emotionCaptureInterval);
+            } catch (err) {
+                console.error('Error starting emotion monitoring:', err);
+                emotionStatusEl.textContent = 'Status: Failed to access camera';
+                emotionStatusEl.style.color = '#fb7185';
+            }
+        }
+
+        function stopEmotionMonitoring() {
+            emotionMonitoringActive = false;
+            if (startEmotionMonitorBtn) startEmotionMonitorBtn.textContent = 'Start Video Monitoring';
+            if (emotionCaptureInterval) {
+                clearInterval(emotionCaptureInterval);
+                emotionCaptureInterval = null;
+            }
+            if (emotionStream) {
+                emotionStream.getTracks().forEach(t => t.stop());
+                emotionStream = null;
+            }
+            if (emotionVideoEl) emotionVideoEl.srcObject = null;
+            emotionStatusEl.textContent = 'Status: Camera off';
+            emotionStatusEl.style.color = '#94a3b8';
+        }
+
+        async function captureAndSendEmotionFrame() {
+            if (!emotionMonitoringActive || !emotionVideoEl || emotionVideoEl.readyState < 2) return;
+
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = emotionVideoEl.videoWidth || 640;
+                canvas.height = emotionVideoEl.videoHeight || 480;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(emotionVideoEl, 0, 0, canvas.width, canvas.height);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+                const res = await fetch(EMOTION_API_BASE + '/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataUrl })
+                });
+
+                if (!res.ok) {
+                    console.warn('Emotion API error', res.status);
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (!data || data.user_id === null || data.dominant_emotion === null) {
+                    emotionCurrentEl.textContent = '—';
+                    emotionConfidenceEl.textContent = '—';
+                    return;
+                }
+
+                emotionCurrentEl.textContent = data.dominant_emotion;
+                emotionConfidenceEl.textContent = data.confidence != null ? data.confidence.toFixed(1) + '%' : 'â€”';
+            } catch (err) {
+                console.error('Error capturing/sending emotion frame:', err);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        function goToSettings() {
+            window.location.href = 'settings.html';
+        }
+
+        // Add click handler for Logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+
+
+
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // Audio Analytics Functions
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+        let audioTrendChart = null;
+
+        async function fetchAudioAnalytics() {
+            const rangeEl = document.getElementById('audioTimeRange');
+            if (!rangeEl) return;   // the audio panel isn't on this page — nothing to fill
+            const days = rangeEl.value || 7;
+            const recipientParam = selectedRecipientId ? `&care_recipient_id=${selectedRecipientId}` : '';
+
+            try {
+                // Fetch statistics
+                const statsRes = await fetch(`${API_BASE}/audio-events/stats?days=${days}${recipientParam}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (!statsRes.ok) throw new Error('Failed to fetch audio stats');
+                const stats = await statsRes.json();
+
+                // Update summary cards
+                document.getElementById('totalCoughs').textContent = stats.cough_count || 0;
+                document.getElementById('totalSneezes').textContent = stats.sneeze_count || 0;
+                document.getElementById('totalAudioEvents').textContent = stats.total_events || 0;
+
+                // Fetch detailed events
+                const eventsRes = await fetch(`${API_BASE}/audio-events?days=${days}&limit=100${recipientParam}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (!eventsRes.ok) throw new Error('Failed to fetch audio events');
+                const events = await eventsRes.json();
+
+                // Process and render charts
+                renderAudioCharts(events, stats);
+                renderRecentEvents(events.slice(0, 10));
+
+            } catch (err) {
+                console.error('Error fetching audio analytics:', err);
+            }
+        }
+
+        function renderAudioCharts(events, stats) {
+            // Process data for trend chart (daily aggregation)
+            const dailyData = {};
+            events.forEach(event => {
+                const date = new Date(event.detected_at).toLocaleDateString();
+                if (!dailyData[date]) {
+                    dailyData[date] = { cough: 0, sneeze: 0 };
+                }
+                if (event.event_type === 'Cough') dailyData[date].cough++;
+                if (event.event_type === 'Sneeze') dailyData[date].sneeze++;
+            });
+
+            const dates = Object.keys(dailyData).sort();
+            const coughData = dates.map(d => dailyData[d].cough);
+            const sneezeData = dates.map(d => dailyData[d].sneeze);
+
+            // Trend Chart
+            const trendCtx = document.getElementById('audioTrendChart');
+            if (audioTrendChart) audioTrendChart.destroy();
+            audioTrendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Coughs',
+                            data: coughData,
+                            borderColor: '#fb7185',
+                            backgroundColor: 'rgba(251, 113, 133, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Sneezes',
+                            data: sneezeData,
+                            borderColor: '#f6c23e',
+                            backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+
+            // Removed Hourly and Event Type charts as per user request
+        }
+
+        function renderRecentEvents(events) {
+            const container = document.getElementById('recentAudioEvents');
+
+            if (!events || events.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--muted);">
+                        <i class="fas fa-headphones" style="font-size: 2rem; opacity: 0.3; margin-bottom: 12px;"></i>
+                        <p>No recent events</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = events.map(event => {
+                const date = new Date(event.detected_at);
+                const timeStr = date.toLocaleTimeString();
+                const dateStr = date.toLocaleDateString();
+                const type = event.event_type.toLowerCase();
+                const icon = type === 'cough' ? '😷' : type === 'sneeze' ? '🤧' : '🔊';
+
+                return `
+                    <div class="audio-event-item ${type}">
+                        <div class="audio-event-icon ${type}">${icon}</div>
+                        <div class="audio-event-details">
+                            <div class="audio-event-type">${event.event_type}</div>
+                            <div class="audio-event-time">${dateStr} at ${timeStr}</div>
+                        </div>
+                        <div class="audio-event-confidence">${event.confidence.toFixed(1)}%</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Event listeners for audio analytics
+        const audioTimeRangeEl = document.getElementById('audioTimeRange');
+        const refreshAudioStatsBtn = document.getElementById('refreshAudioStats');
+
+        if (audioTimeRangeEl) {
+            audioTimeRangeEl.addEventListener('change', fetchAudioAnalytics);
+        }
+
+        if (refreshAudioStatsBtn) {
+            refreshAudioStatsBtn.addEventListener('click', fetchAudioAnalytics);
+        }
+
+
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('uploadToast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+
+            if (!toast) return;
+
+            msg.textContent = message;
+            icon.textContent = type === 'success' ? '✓' : '✕';
+            toast.className = 'show ' + type;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        fetchProfile();
+        fetchDoctors(); // Load doctors / care team section
+        fetchAndRenderRecordings();
+        fetchAudioAnalytics(); // Load audio analytics on page load
+
+        // Periodic refresh for notifications and alerts (every 2 mins)
+        setInterval(() => {
+            fetchProfile();
+        }, 120000);
+
+        // Connect to Socket.IO for real-time audio updates
+        const socketUrl = (typeof API_BASE !== 'undefined') ? API_BASE.replace('/api', '') : 'http://127.0.0.1:8000';
+        const audioSocket = io(socketUrl, {
+            transports: ['websocket'],
+            upgrade: false
+        });
+
+        audioSocket.on('connect', () => {
+            if (typeof token !== 'undefined' && token) {
+                audioSocket.emit('authenticate', {
+                    token: token,
+                    care_recipient_id: typeof selectedRecipientId !== 'undefined' && selectedRecipientId ? parseInt(selectedRecipientId) : null
+                });
+            }
+        });
+
+        audioSocket.on('alert', (data) => {
+            // Re-fetch analytics immediately to update dashboard in real-time
+            fetchAudioAnalytics();
+        });
+
+        // ══════════════════════════════════════════════════════════════
+        //  DOSE CONFIRMATION SYSTEM
+        //  Source: confirmation-based medicine inventory (CareTaker.ai)
+        // ══════════════════════════════════════════════════════════════
+
+        let _pendingDoseIds = new Set(); // track IDs currently on screen
+
+        /**
+         * Format an ISO datetime string into a readable local time.
+         */
+        function _formatDoseTime(iso) {
+            try {
+                const d = new Date(iso);
+                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } catch { return iso; }
+        }
+
+        /**
+         * Render a single dose confirmation card into the list.
+         * Safe to call multiple times — deduplicates via dose_log_id.
+         */
+        function _addDoseCard(dose) {
+            const list = document.getElementById('doseConfirmList');
+            if (!list) return;
+            if (_pendingDoseIds.has(dose.dose_log_id)) return; // already on screen
+            _pendingDoseIds.add(dose.dose_log_id);
+
+            const card = document.createElement('div');
+            card.className = 'dose-card';
+            card.id = `dose-card-${dose.dose_log_id}`;
+            card.innerHTML = `
+                <div class="dose-pill-icon">💊</div>
+                <div class="dose-info">
+                    <div class="dose-med-name">${dose.medicine_name}${
+                        dose.dosage ? ` <span style="font-weight:500;color:#64748b;">(${dose.dosage})</span>` : ''
+                    }</div>
+                    <div class="dose-meta">
+                        <i class="fas fa-user-circle" style="margin-right:4px;"></i>${dose.recipient_name}
+                        &nbsp;·&nbsp;
+                        <i class="fas fa-clock" style="margin-right:4px;"></i>Scheduled: ${_formatDoseTime(dose.scheduled_time)}
+                    </div>
+                </div>
+                <div class="dose-actions">
+                    <button class="dose-btn taken" id="taken-btn-${dose.dose_log_id}"
+                        onclick="confirmDose(${dose.dose_log_id}, 'TAKEN')">
+                        ✔ Taken
+                    </button>
+                    <button class="dose-btn missed" id="missed-btn-${dose.dose_log_id}"
+                        onclick="confirmDose(${dose.dose_log_id}, 'MISSED')">
+                        ✖ Not Taken
+                    </button>
+                </div>
+            `;
+            list.appendChild(card);
+            _updateDoseSection();
+        }
+
+        /**
+         * Remove a dose card smoothly after confirmation.
+         */
+        function _removeDoseCard(doseLogId) {
+            const card = document.getElementById(`dose-card-${doseLogId}`);
+            if (!card) return;
+            card.classList.add('removing');
+            setTimeout(() => {
+                card.remove();
+                _pendingDoseIds.delete(doseLogId);
+                _updateDoseSection();
+            }, 380);
+        }
+
+        /**
+         * Show/hide the section and update the badge count.
+         */
+        function _updateDoseSection() {
+            const section = document.getElementById('doseConfirmSection');
+            const badge   = document.getElementById('doseConfirmBadge');
+            const count   = _pendingDoseIds.size;
+
+            if (!section) return;
+            section.style.display = count > 0 ? 'block' : 'none';
+            if (badge) badge.textContent = `${count} PENDING`;
+        }
+
+        /**
+         * Poll the backend for PENDING doses every 30 seconds.
+         * This is the fallback when Socket.IO push is not available.
+         */
+        async function loadPendingDoses() {
+            try {
+                const res = await fetch(`${API_BASE}/pending-doses`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) return;
+                const doses = await res.json();
+
+                // Add new cards (dedup handled inside _addDoseCard)
+                doses.forEach(d => _addDoseCard(d));
+
+                // Remove cards no longer PENDING (confirmed elsewhere)
+                const liveIds = new Set(doses.map(d => d.dose_log_id));
+                [..._pendingDoseIds].forEach(id => {
+                    if (!liveIds.has(id)) _removeDoseCard(id);
+                });
+            } catch(e) {
+                console.warn('[DoseConfirm] Poll failed:', e);
+            }
+        }
+
+        /**
+         * Confirm (TAKEN / MISSED) a dose log via the dashboard API.
+         * Idempotent — if already confirmed, the backend returns 409 and we
+         * just remove the card gracefully.
+         */
+        async function confirmDose(doseLogId, action) {
+            // Disable both buttons immediately to prevent double-clicks
+            const takenBtn  = document.getElementById(`taken-btn-${doseLogId}`);
+            const missedBtn = document.getElementById(`missed-btn-${doseLogId}`);
+            if (takenBtn)  { takenBtn.disabled  = true; takenBtn.textContent  = '…'; }
+            if (missedBtn) { missedBtn.disabled = true; missedBtn.textContent = '…'; }
+
+            try {
+                const res = await fetch(`${API_BASE}/confirm-dose`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ dose_log_id: doseLogId, action })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    _removeDoseCard(doseLogId);
+                    const label = action === 'TAKEN' ? '✔ Dose confirmed as taken' : '⚠ Dose marked as not taken';
+                    const type  = action === 'TAKEN' ? 'success' : 'warning';
+                    showToast(label, type);
+                } else if (res.status === 409) {
+                    // Already confirmed (race with email link)
+                    _removeDoseCard(doseLogId);
+                    showToast('Dose already recorded.', 'success');
+                } else {
+                    // Re-enable buttons on error
+                    if (takenBtn)  { takenBtn.disabled  = false; takenBtn.textContent  = '✔ Taken'; }
+                    if (missedBtn) { missedBtn.disabled = false; missedBtn.textContent = '✖ Not Taken'; }
+                    showToast('Could not confirm dose. Please try again.', 'error');
+                }
+            } catch (e) {
+                console.error('[DoseConfirm] Error:', e);
+                if (takenBtn)  { takenBtn.disabled  = false; takenBtn.textContent  = '✔ Taken'; }
+                if (missedBtn) { missedBtn.disabled = false; missedBtn.textContent = '✖ Not Taken'; }
+                showToast('Network error. Please check connection.', 'error');
+            }
+        }
+
+        // ── Socket.IO real-time listeners ──
+        // new_dose_pending  → add card instantly when scheduler fires
+        audioSocket.on('new_dose_pending', (data) => {
+            _addDoseCard({
+                dose_log_id:    data.dose_log_id,
+                medicine_name:  data.medicine_name,
+                dosage:         data.dosage || '',
+                scheduled_time: data.scheduled_time,
+                recipient_name: data.recipient_name || '',
+                recipient_id:   data.recipient_id
+            });
+        });
+
+        // dose_confirmed → remove card when confirmed from any channel (email/voice/dashboard)
+        audioSocket.on('dose_confirmed', (data) => {
+            _removeDoseCard(data.dose_log_id);
+        });
+
+        // ── Initial load + 30-second polling fallback ──
+        loadPendingDoses();
+        setInterval(loadPendingDoses, 30000);
+
+    </script>
+    <!-- Chart.js for Audio Analytics -->
+    <script src="vendor/chart-4.4.1.umd.js"></script>
+    <!-- Add these script tags right before the closing </body> tag -->
+    <script src="/js/weatherWidget_v2.js"></script>
+    <script>
+        let weatherWidget = null;
+        document.addEventListener('DOMContentLoaded', function () {
+            weatherWidget = new WeatherWidget('weather-widget-container', 'http://127.0.0.1:8000/api');
+        });
+    </script>
+</body>
+
+</html>

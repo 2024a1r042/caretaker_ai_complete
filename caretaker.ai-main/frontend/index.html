@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caretaker.ai - Modern Elderly Care</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* --- CSS Variables for Pastel Theme --- */
+    :root {
+      --primary: #4A90E2;
+      /* Softer, modern blue */
+      --primary-grad-start: #4A90E2;
+      --primary-grad-end: #6BB5FF;
+      --secondary: #1A202C;
+      /* Pastel Accents */
+      --pastel-mint: #B2F7EF;
+      --pastel-peach: #FFDAC1;
+      --pastel-lavender: #E2D1F9;
+      /* Backgrounds & Text */
+      --bg-off-white: #FDFBF7;
+      --text-dark: #1A202C;
+      --text-soft: #4A5568;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      /* Modern Pastel Gradient Background Pattern */
+      background-color: var(--bg-off-white);
+      background-image:
+        radial-gradient(at 20% 30%, var(--pastel-mint) 0px, transparent 55%),
+        radial-gradient(at 80% 10%, var(--pastel-peach) 0px, transparent 50%),
+        radial-gradient(at 40% 80%, var(--pastel-lavender) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, var(--pastel-mint) 0px, transparent 40%);
+      background-attachment: fixed;
+      background-size: 120% 120%;
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* --- Header & Nav (Glassmorphism) --- */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 60px;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 100;
+      /* Frosted Glass Effect */
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+      box-sizing: border-box;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 900;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    nav a {
+      margin-left: 30px;
+      text-decoration: none;
+      color: var(--text-dark);
+      font-size: 15px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    nav a:not(.btn):hover {
+      color: var(--primary);
+    }
+
+    /* --- Modern Buttons (Pill shaped) --- */
+    .btn {
+      padding: 12px 24px;
+      border-radius: 50px;
+      /* Pill shape */
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-grad-start), var(--primary-grad-end));
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+      border: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(74, 144, 226, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.5);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* --- Hero Section --- */
+    .hero {
+      padding: 180px 60px 100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .hero-text {
+      flex: 1;
+    }
+
+    .hero-text h1 {
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin: 0 0 25px;
+      letter-spacing: -1.5px;
+      color: var(--secondary);
+    }
+
+    /* Gradient accent on part of the headline */
+    .highlight {
+      background: linear-gradient(to right, var(--primary-grad-start), var(--pastel-lavender));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-text p {
+      font-size: 20px;
+      line-height: 1.6;
+      color: var(--text-soft);
+      max-width: 540px;
+      margin-bottom: 40px;
+    }
+
+    .hero-buttons a {
+      margin-right: 15px;
+    }
+
+    .hero-img {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Decorative blob behind image */
+    .hero-img::before {
+      content: '';
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 110%;
+      height: 110%;
+      background: linear-gradient(to bottom right, var(--pastel-mint), var(--pastel-lavender));
+      z-index: -1;
+      border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+      opacity: 0.5;
+      filter: blur(40px);
+    }
+
+    .hero-img img {
+      width: 100%;
+      max-width: 550px;
+      border-radius: 30px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      transform: rotate(2deg);
+      /* Slight jaunty tilt */
+      border: 6px solid rgba(255, 255, 255, 0.6);
+    }
+
+    /* --- Features Section --- */
+    .features {
+      padding: 100px 60px;
+      text-align: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .features h2 {
+      font-size: 48px;
+      font-weight: 900;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    .feature-grid {
+      margin-top: 70px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+      align-items: stretch;
+    }
+
+    /* Modern Glassmorphism Cards */
+    .feature-card {
+      background: rgba(255, 255, 255, 0.5);
+      /* More transparent */
+      backdrop-filter: blur(20px);
+      /* Stronger blur */
+      -webkit-backdrop-filter: blur(20px);
+      padding: 40px 35px;
+      border-radius: 24px;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(74, 144, 226, 0.15);
+      border-color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Top colored accent line on cards */
+    .card-accent-mint {
+      border-top: 6px solid var(--pastel-mint);
+    }
+
+    .card-accent-peach {
+      border-top: 6px solid var(--pastel-peach);
+    }
+
+    .card-accent-lavender {
+      border-top: 6px solid var(--pastel-lavender);
+    }
+
+    /* Subtle emoji icons */
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: 20px;
+      display: inline-block;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 16px;
+    }
+
+    .feature-card h3 {
+      margin: 0 0 15px;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--secondary);
+    }
+
+    .feature-card p {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-soft);
+      margin: 0;
+    }
+
+    footer {
+      padding: 60px;
+      text-align: center;
+      color: var(--text-soft);
+      margin-top: 60px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 968px) {
+      .hero {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding-top: 140px;
+        gap: 50px;
+      }
+
+      .hero-text p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-img img {
+        transform: rotate(0deg);
+        max-width: 90%;
+      }
+
+      .hero-text h1 {
+        font-size: 48px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 15px 20px;
+      }
+
+      nav a:not(.btn) {
+        display: none;
+      }
+
+      /* Hide simple links on mobile */
+      .hero {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .features {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .feature-card {
+        padding: 30px 25px;
+      }
+    }
+
+    /* --- Modal Styling --- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-content {
+      background-color: var(--bg-off-white);
+      margin: 15% auto;
+      padding: 40px;
+      border-radius: 30px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      position: relative;
+    }
+
+    .modal-content h3 {
+      font-size: 28px;
+      margin-bottom: 30px;
+      color: var(--secondary);
+    }
+
+    .modal-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .modal-btn {
+      padding: 15px;
+      border-radius: 20px;
+      border: 2px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-btn:hover {
+      background: var(--primary);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--text-soft);
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">Caretaker.ai</div>
+    <nav>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a class="btn btn-secondary" href="javascript:void(0)" onclick="openRoleModal('login')">Login</a>
+        <a class="btn btn-primary" href="javascript:void(0)" onclick="openRoleModal('signup')">Sign Up</a>
+      </nav>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Your Smart Companion for <span class="highlight">Elderly Care</span></h1>
+      <p>Caretaker.ai uses cutting-edge AI to monitor, analyze, and support senior citizens in real time. Ensuring
+        safety, comfort, and independence at every step.</p>
+      <div class="hero-buttons">
+        <a class="btn btn-primary" href="javascript:void(0)" onclick="openRoleModal('signup')">Get Started Now</a>
+        <a class="btn btn-secondary" href="javascript:void(0)" onclick="openRoleModal('login')">Login</a>
+      </div>
+    </div>
+    <div class="hero-img">
+      <img src="https://i.pinimg.com/736x/de/de/53/dede53cfd566124bf1b07f584097d8a4.jpg"
+        alt="Elderly Care and Support" />
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <h2>Why Choose Caretaker.ai?</h2>
+    <div class="feature-grid">
+
+      <div class="feature-card card-accent-mint">
+        <span class="feature-icon">🛡️</span>
+        <h3>AI‑driven Alerts</h3>
+        <p>Automatic fall detection, cough detection, and instant emergency alerts sent directly to caregivers and
+          family members.</p>
+      </div>
+
+      <div class="feature-card card-accent-peach">
+        <span class="feature-icon">📊</span>
+        <h3>Caregiver Dashboard</h3>
+        <p>Manage multiple care recipients easily with detailed health analytics and daily summaries from a unified,
+          modern dashboard.</p>
+      </div>
+
+      <div class="feature-card card-accent-lavender">
+        <span class="feature-icon">🔒</span>
+        <h3>Secure & Private</h3>
+        <p>Built with end‑to‑end encryption. Our system is designed from the ground up to protect personal health data
+          and ensure privacy.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Caretaker.ai — Empowering Intelligent Elderly Care
+  </footer>
+  <!-- Role Selection Modal -->
+  <div id="roleModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeRoleModal()">&times;</span>
+      <h3 id="modalTitle">Select Role</h3>
+      <div class="modal-options">
+        <button class="modal-btn" onclick="handleRoleSelection('caretaker')">As Caretaker</button>
+        <button class="modal-btn" onclick="handleRoleSelection('doctor')">As Doctor</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentMode = 'login';
+
+    function openRoleModal(mode) {
+      currentMode = mode;
+      const title = mode === 'login' ? 'Login' : 'Sign Up';
+      document.getElementById('modalTitle').innerText = title + ' As';
+      document.getElementById('roleModal').style.display = 'block';
+    }
+
+    function closeRoleModal() {
+      document.getElementById('roleModal').style.display = 'none';
+    }
+
+    function handleRoleSelection(role) {
+      const page = currentMode === 'login' ? 'login.html' : 'register.html';
+      window.location.href = `${page}?role=${role}`;
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+      const modal = document.getElementById('roleModal');
+      if (event.target == modal) {
+        closeRoleModal();
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CareTaker — Cough / Snore Detector (Smoothing + Single Viz)</title>
+
+  <!-- TF.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#071328; --card:#0b1220; --muted:#9aa4b2; --accent:#6ee7b7; --glass: rgba(255,255,255,0.03);
+      font-family:Inter,Roboto,Arial,sans-serif;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071328 0%, #081225 60%);color:#e6eef6}
+    .wrap{max-width:980px;margin:24px auto;padding:18px;display:grid;grid-template-columns:1fr 380px;gap:16px}
+    .card{background:linear-gradient(180deg,var(--card),#071022);border-radius:14px;padding:14px;box-shadow:0 6px 30px rgba(3,8,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    header h1{margin:0;font-size:20px}
+    header p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    .panel-main{display:flex;flex-direction:column;gap:12px}
+    /* Removed audio visualization styles */
+
+    .big-display{display:flex;align-items:center;gap:18px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+    .label-block .cls{font-size:18px;font-weight:700}
+    .conf-pill{min-width:100px;border-radius:999px;padding:6px 10px;text-align:center;font-weight:700;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
+
+    .bars{display:flex;flex-direction:column;gap:10px}
+    .bar-row{display:flex;align-items:center;gap:12px}
+    .bar-row .name{width:110px;color:var(--muted);font-size:14px}
+    .bar{height:12px;flex:1;background:var(--glass);border-radius:8px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.03)}
+    .bar > i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#34d399,#06b6d4);border-radius:inherit;transition:width 160ms linear}
+    .bar .num{width:50px;text-align:right;color:var(--muted);font-size:13px;margin-left:8px}
+
+    .panel-side{display:flex;flex-direction:column;gap:12px}
+    .meter{height:68px;border-radius:10px;padding:10px;background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);display:flex;align-items:center;gap:14px}
+    .controls{display:flex;gap:10px}
+    .btn{padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,#0b1228,#071025);border:1px solid rgba(255,255,255,0.03);color:#dff3ec;font-weight:600;cursor:pointer}
+    .btn.off{opacity:0.72}
+    .log{height:140px;overflow:auto;padding:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);border-radius:8px;font-family:monospace;font-size:12px;color:#d7eaf1}
+    .small{font-size:12px;color:var(--muted)}
+    .settings{display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.02)}
+    .row{display:flex;gap:8px;align-items:center}
+    input[type=range]{vertical-align:middle}
+    select{background:transparent;color:var(--muted);padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
+    footer{margin-top:10px;color:var(--muted);font-size:12px;text-align:center}
+    @media (max-width:960px){ .wrap{grid-template-columns:1fr; padding:14px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card panel-main">
+      <header>
+        <h1>Cough & Snore Detector</h1>
+      </header>
+
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div id="liveIndicator" style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.03);"></div>
+          <div class="small">Model: <strong id="statusLbl">loading…</strong></div>
+        </div>
+      </div>
+
+
+      <div class="big-display">
+        <div style="flex:1" class="label-block">
+          <div class="cls" id="bestLabel">—</div>
+          <div class="sub small">Confidence & realtime updates</div>
+        </div>
+        <div class="conf-pill" id="confidenceP">—</div>
+      </div>
+
+      <div class="bars" id="barsContainer"></div>
+
+      <div class="settings">
+<div class="row small">
+          <label style="width:130px">Smoothing (EMA):</label>
+          <input type="checkbox" id="emaToggle">
+          <label style="margin-left:6px;">Enable</label>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <span style="color:var(--muted)">α</span>
+            <input id="emaAlpha" type="range" min="0" max="100" value="18">
+            <div id="emaAlphaVal" style="width:34px;text-align:right;color:var(--muted)">0.18</div>
+          </div>
+        </div>
+
+        <div class="row small">
+          <label style="width:130px">Debounce:</label>
+          <input type="checkbox" id="debToggle">
+          <label style="margin-left:6px;">Enable</label>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <span style="color:var(--muted)">window</span>
+            <input id="debWindow" type="range" min="2" max="12" value="6">
+            <div id="debWindowVal" style="width:34px;text-align:right;color:var(--muted)">6</div>
+            <span style="color:var(--muted)">req</span>
+            <input id="debReq" type="range" min="1" max="12" value="3">
+            <div id="debReqVal" style="width:34px;text-align:right;color:var(--muted)">3</div>
+          </div>
+        </div>
+      </div>
+
+      
+    </div>
+
+    <div class="card panel-side">
+      <div class="meter">
+        <div style="flex:1">
+          <div class="small">Mic level</div>
+          <div style="height:8px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)">
+            <div id="levelBar" style="height:100%;width:0%;background:linear-gradient(90deg,#34d399,#06b6d4);transition:width 100ms linear"></div>
+          </div>
+        </div>
+        <div style="width:120px;text-align:center"><div class="small">Live</div><div id="indicatorText" style="font-weight:700;margin-top:6px">—</div></div>
+      </div>
+
+      <div class="controls" style="margin-top:8px">
+        <button id="startBtn" class="btn">Start</button>
+        <button id="stopBtn" class="btn off">Stop</button>
+        <button id="resetLog" class="btn off">Clear Log</button>
+      </div>
+
+      <div style="margin-top:10px" class="small">Sensitivity: <input id="threshold" type="range" min="0" max="100" value="20" style="vertical-align:middle"> <span id="thresholdVal">20</span></div>
+
+      <div style="margin-top:8px" class="small">Realtime events</div>
+      <div id="log" class="log">log started…</div>
+    </div>
+  </div>
+
+<!-- ======================== audio + model code ======================== -->
+<script>
+window.tm = window.tm || {};
+tm.sound = tm.sound || {};
+
+tm.sound.load = async function(modelURL, metadataURL) {
+  const TARGET_SAMPLE_RATE = 16000;
+  const BUFFER_SECONDS = 1.0;
+  const BUFFER_SIZE = TARGET_SAMPLE_RATE * BUFFER_SECONDS;
+  const FRAME_LENGTH = 2048;
+  const HOP_LENGTH = 64;
+  const N_MELS = 43;
+  const TARGET_FRAMES = 232;
+
+  const metadata = await fetch(metadataURL).then(r => r.json());
+  const labels = metadata.wordLabels || [];
+  const model = await tf.loadLayersModel(modelURL);
+
+  let buffer = new Float32Array(BUFFER_SIZE);
+  let writePos = 0; let filled = false;
+
+  function pushSamples(newSamples) {
+    const n = newSamples.length;
+    if (n >= BUFFER_SIZE) {
+      buffer.set(newSamples.subarray(n - BUFFER_SIZE));
+      writePos = 0; filled = true; return;
+    }
+    const endSpace = BUFFER_SIZE - writePos;
+    if (n <= endSpace) {
+      buffer.set(newSamples, writePos);
+      writePos += n;
+      if (writePos === BUFFER_SIZE) { writePos = 0; filled = true; }
+    } else {
+      buffer.set(newSamples.subarray(0, endSpace), writePos);
+      buffer.set(newSamples.subarray(endSpace), 0);
+      writePos = n - endSpace; filled = true;
+    }
+  }
+
+  function getAudioWindow() {
+    if (!filled && writePos === 0) return null;
+    if (!filled) return buffer.slice(0, writePos);
+    if (writePos === 0) return buffer.slice();
+    let out = new Float32Array(BUFFER_SIZE);
+    out.set(buffer.subarray(writePos));
+    out.set(buffer.subarray(0, writePos), BUFFER_SIZE - writePos);
+    return out;
+  }
+
+  function preprocess(windowFloat32) {
+    return tf.tidy(() => {
+      const x = tf.tensor1d(windowFloat32);
+      const stft = tf.signal.stft(x, FRAME_LENGTH, HOP_LENGTH);
+      const mag = tf.abs(stft);
+      const magT = mag.transpose();
+      const mag4 = magT.expandDims(0).expandDims(-1);
+      const resized = tf.image.resizeBilinear(mag4, [N_MELS, TARGET_FRAMES], true);
+      const logSpec = tf.log(resized.add(1e-6));
+      const mean = logSpec.mean();
+      const variance = tf.moments(logSpec).variance;
+      const std = variance.sqrt().add(1e-9);
+      const norm = logSpec.sub(mean).div(std);
+      return norm.clone();
+    });
+  }
+
+  function downsampleBuffer(bufferIn, inputRate) {
+    if (inputRate === TARGET_SAMPLE_RATE) return bufferIn;
+    const sampleRateRatio = inputRate / TARGET_SAMPLE_RATE;
+    const newLength = Math.round(bufferIn.length / sampleRateRatio);
+    const result = new Float32Array(newLength);
+    let offsetResult = 0, offsetBuffer = 0;
+    while (offsetResult < result.length) {
+      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+      let accum = 0, count = 0;
+      for (let i = offsetBuffer; i < nextOffsetBuffer && i < bufferIn.length; i++) {
+        accum += bufferIn[i]; count++;
+      }
+      result[offsetResult] = count ? (accum / count) : 0;
+      offsetResult++; offsetBuffer = nextOffsetBuffer;
+    }
+    return result;
+  }
+
+  return {
+    getClassLabels() { return labels; },
+
+    async listen(callback, options={}) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      console.log("Browser sample rate:", audioCtx.sampleRate);
+
+      const source = audioCtx.createMediaStreamSource(stream);
+
+      // analyser for visualization & mic level
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.03;
+      source.connect(analyser);
+
+      const processor = audioCtx.createScriptProcessor(1024, 1, 1);
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+
+      let count = 0, INFER_EVERY_N = 3;
+      processor.onaudioprocess = ev => {
+        try {
+          const input = ev.inputBuffer.getChannelData(0);
+          const rate = audioCtx.sampleRate;
+          let samples16 = input;
+          if (rate !== 16000) samples16 = downsampleBuffer(input, rate);
+
+          pushSamples(samples16);
+
+          const win = getAudioWindow();
+          if (!win || win.length < BUFFER_SIZE) return;
+
+          (async () => {
+            try {
+              const modelInput = preprocess(win);
+              const raw = model.predict(modelInput);
+              const outTensor = Array.isArray(raw) ? raw[0] : raw;
+              const probs = outTensor.dataSync();
+              const results = labels.map((label,i)=>({className:label, probability:probs[i]}));
+              callback(results);
+              tf.dispose([modelInput, outTensor]);
+            } catch(err){ console.error("Prediction error:", err); }
+          })();
+        } catch(e){ console.error("onaudioprocess error:", e); }
+      };
+
+      return { stop: () => { try{ processor.disconnect(); source.disconnect(); } catch(e){}; stream.getTracks().forEach(t=>t.stop()); } };
+    }
+  };
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// APP LOGIC: UI, smoothing, debounce, viz selection
+////////////////////////////////////////////////////////////////////////////////
+(function(){
+  const MODEL = "./cough_snore_bg/model.json";
+  const META  = "./cough_snore_bg/metadata.json";
+
+  // UI refs
+  const statusLbl = document.getElementById("statusLbl");
+  const bestLabel = document.getElementById("bestLabel");
+  const confidenceP = document.getElementById("confidenceP");
+  const barsContainer = document.getElementById("barsContainer");
+  const logEl = document.getElementById("log");
+  const startBtn = document.getElementById("startBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const resetLog = document.getElementById("resetLog");
+  const threshold = document.getElementById("threshold");
+  const thresholdVal = document.getElementById("thresholdVal");
+  const levelBar = document.getElementById("levelBar");
+  const liveIndicator = document.getElementById("liveIndicator");
+  const indicatorText = document.getElementById("indicatorText");
+
+  const emaToggle = document.getElementById('emaToggle');
+  const emaAlpha = document.getElementById('emaAlpha');
+  const emaAlphaVal = document.getElementById('emaAlphaVal');
+
+  const debToggle = document.getElementById('debToggle');
+  const debWindow = document.getElementById('debWindow');
+  const debReq = document.getElementById('debReq');
+  const debWindowVal = document.getElementById('debWindowVal');
+  const debReqVal = document.getElementById('debReqVal');
+
+  // ensure crisp canvas size
+  function fixCanvasSize() {
+  }
+  window.addEventListener('resize', fixCanvasSize);
+  fixCanvasSize();
+
+  let modelObj = null, listenHandle = null, labels = [], running=false;
+
+  // smoothing state
+  let emaValues = null;
+  function initEma() { emaValues = new Array(labels.length).fill(0); }
+
+  // debounce state
+  const history = [];
+  function pushHistory(val, maxLen) {
+    history.unshift(val);
+    if (history.length > maxLen) history.pop();
+  }
+  function countInHistory(val) { return history.filter(x=>x===val).length; }
+
+  function appendLog(txt){ const now = new Date().toLocaleTimeString(); logEl.innerText = `[${now}] ${txt}\n` + logEl.innerText; }
+
+  async function loadModel(){
+    try {
+      modelObj = await tm.sound.load(MODEL, META);
+      labels = modelObj.getClassLabels();
+      statusLbl.innerText = "loaded";
+      setupBars();
+      initEma();
+    } catch(e){ statusLbl.innerText = "error"; appendLog("Model load error: "+e); console.error(e); }
+  }
+
+  function setupBars(){
+    barsContainer.innerHTML = "";
+    labels.forEach(lb => {
+      const r = document.createElement("div"); r.className="bar-row";
+      const name = document.createElement("div"); name.className="name"; name.innerText = lb;
+      const bar = document.createElement("div"); bar.className="bar"; const fill = document.createElement("i"); bar.appendChild(fill);
+      const num = document.createElement("div"); num.className="num"; num.innerText="0%";
+      r.appendChild(name); r.appendChild(bar); r.appendChild(num);
+      barsContainer.appendChild(r);
+    });
+  }
+
+  function updateBars(res){
+    const rows = barsContainer.querySelectorAll(".bar-row");
+    res.forEach((r,i) => {
+      const pct = Math.round(r.probability * 100);
+      rows[i].querySelector("i").style.width = pct + "%";
+      rows[i].querySelector(".num").innerText = pct + "%";
+    });
+  }
+
+  // apply EMA smoothing if enabled; returns array of probabilities to use for decision
+  function applySmoothing(rawProbs) {
+    if (!emaValues || emaValues.length !== rawProbs.length) initEma();
+    if (!emaToggle.checked) return rawProbs;
+    const alpha = (Number(emaAlpha.value) || 18) / 100;
+    for (let i=0;i<rawProbs.length;i++){
+      emaValues[i] = alpha * rawProbs[i] + (1 - alpha) * (emaValues[i] || 0);
+    }
+    return emaValues.slice();
+  }
+
+  // debounce decision helper: returns [accepted:boolean, chosenClass:string, chosenProb:number]
+  function debounceDecision(bestClass, bestProb) {
+    if (!debToggle.checked) return [true, bestClass, bestProb];
+    const win = Number(debWindow.value);
+    const req = Number(debReq.value);
+    pushHistory(bestClass, win);
+    const count = countInHistory(bestClass);
+    const accepted = (count >= req && bestProb >= (Number(threshold.value)/100));
+    return [accepted, bestClass, bestProb];
+  }
+
+  function handlePred(rawResults) {
+    // rawResults: array of {className, probability}
+    updateBars(rawResults);
+
+    // build raw probability array matching labels order
+    const rawProbs = rawResults.map(r => r.probability);
+    const probsToUse = applySmoothing(rawProbs);  // maybe EMA
+
+    // decide best index
+    let bestIdx = 0;
+    for (let i=1;i<probsToUse.length;i++) if (probsToUse[i] > probsToUse[bestIdx]) bestIdx = i;
+    const bestProb = probsToUse[bestIdx];
+    const bestClass = labels[bestIdx];
+
+    bestLabel.innerText = bestClass;
+    confidenceP.innerText = (bestProb*100).toFixed(1) + "%";
+
+    // apply debounce logic (history of class names)
+    const [accepted, chosenClass, chosenProb] = debounceDecision(bestClass, bestProb);
+
+    if (accepted) {
+      // only log/show if above threshold
+      if (chosenProb >= (Number(threshold.value)/100)) {
+        liveIndicator.style.background = 'linear-gradient(90deg,#6ee7b7,#06b6d4)';
+        indicatorText.innerText = chosenClass.toUpperCase();
+        appendLog(chosenClass + " " + (chosenProb*100).toFixed(1) + "%");
+      } else {
+        liveIndicator.style.background = 'rgba(255,255,255,0.03)';
+        indicatorText.innerText = '—';
+      }
+    } else {
+      // not accepted by debounce - show neutral
+      liveIndicator.style.background = 'rgba(255,255,255,0.03)';
+      indicatorText.innerText = '—';
+    }
+  }
+
+  // mic level loop
+  function micLoop(){
+    const lvl = window._lastMicLevel || 0;
+    const pct = Math.min(1, lvl * 4);
+    levelBar.style.width = (pct*100) + "%";
+    requestAnimationFrame(micLoop);
+  }
+
+  // No viz selection needed anymore - only spectrogram is shown
+  fixCanvasSize();
+
+  // UI control sync
+  emaAlpha.addEventListener('input', ()=> { emaAlphaVal.innerText = (Number(emaAlpha.value)/100).toFixed(2); });
+  debWindow.addEventListener('input', ()=> { debWindowVal.innerText = debWindow.value; });
+  debReq.addEventListener('input', ()=> { debReqVal.innerText = debReq.value; });
+  threshold.addEventListener('input', ()=> { thresholdVal.innerText = threshold.value; });
+
+  // start / stop
+  startBtn.onclick = async ()=>{
+    if (!modelObj) { appendLog("Model not loaded yet."); return; }
+    if (running) return;
+    running = true; startBtn.classList.add('off'); stopBtn.classList.remove('off');
+    try {
+      listenHandle = await modelObj.listen(handlePred);
+      appendLog("Started microphone…");
+      statusLbl.innerText = "listening";
+      micLoop();
+    } catch(err){ appendLog("Mic error: "+err); console.error(err); }
+  };
+
+  stopBtn.onclick = ()=>{
+    if (!running) return;
+    running = false; stopBtn.classList.add('off'); startBtn.classList.remove('off'); statusLbl.innerText = "stopped";
+    try{ listenHandle.stop(); }catch(e){} appendLog("Stopped listening."); liveIndicator.style.background = 'rgba(255,255,255,0.03)'; indicatorText.innerText='—';
+  };
+
+  resetLog.onclick = ()=>{ logEl.innerText=''; appendLog("Log cleared."); };
+
+  // load model on start
+  loadModel();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+[
+  {
+    "metric": "Creatinine",
+    "value": 0.78
+  },
+  {
+    "metric": "Fasting Glucose",
+    "value": 112.82
+  },
+  {
+    "metric": "HbA1c",
+    "value": 5.38
+  },
+  {
+    "metric": "HDL",
+    "value": 47.69
+  },
+  {
+    "metric": "LDL",
+    "value": 106.31
+  },
+  {
+    "metric": "Vitamin D",
+    "value": 74.13
+  }
+]

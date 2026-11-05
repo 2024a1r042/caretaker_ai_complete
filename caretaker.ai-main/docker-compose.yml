@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      # Mount Google credentials inside the container
+      - ./google_creds.json:/app/google_creds.json:ro
+    env_file:
+      - .env
+    environment:
+      # Ensure inside the container it points to the mounted location
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/google_creds.json
+      # Update DB URL to point to host if using local Postgres outside Docker
+      - DATABASE_URL=${DATABASE_URL}
+    network_mode: "host" # Use host networking so it can connect to local DB easily
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html

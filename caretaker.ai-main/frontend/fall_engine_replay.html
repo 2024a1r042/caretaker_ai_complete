@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fall inference replay</title>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#F3F6F2; --sheet:#fff; --ink:#1F2A4D; --soft:#55607F; --rule:#D9E0D8; --marigold:#E39B2D; --red:#B4342D; --green:#2F7D4F; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper:#151A26; --sheet:#1D2433; --ink:#E9ECF5; --soft:#A3ACC4; --rule:#313A4F; --red:#F07A72; --green:#7CC79B; } }
+  :root[data-theme="dark"] { --paper:#151A26; --sheet:#1D2433; --ink:#E9ECF5; --soft:#A3ACC4; --rule:#313A4F; --red:#F07A72; --green:#7CC79B; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:'Mukta',system-ui,sans-serif; font-size:16px; line-height:1.5; }
+  main { max-width:1180px; margin:0 auto; padding:20px 16px 60px; }
+  h1 { font-size:1.9rem; font-weight:800; margin:0; }
+  p.lede { color:var(--soft); margin:2px 0 16px; max-width:70ch; }
+  .bar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+  select, button { font:inherit; padding:8px 12px; border-radius:10px; border:1px solid var(--rule); background:var(--sheet); color:var(--ink); }
+  button.primary { background:var(--ink); color:var(--sheet); border-color:var(--ink); font-weight:600; }
+  :focus-visible { outline:3px solid var(--marigold); outline-offset:2px; }
+  .grid { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; align-items:start; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
+  canvas { width:100%; height:auto; border-radius:16px; background:#222a3b; display:block; }
+  .log { background:var(--sheet); border:1px solid var(--rule); border-radius:16px; padding:14px 16px; max-height:560px; overflow:auto; }
+  .log h2 { margin:0 0 6px; font-size:1.15rem; }
+  .ev { border-top:1px solid var(--rule); padding:10px 0; }
+  .ev:first-of-type { border-top:0; }
+  .ev b.fall { color:var(--red); } .ev b.ok { color:var(--green); } .ev b.rej { color:var(--soft); font-weight:600; }
+  .ev ul { margin:4px 0 0; padding-left:18px; color:var(--soft); font-size:.92rem; }
+  .desc { color:var(--soft); }
+  .timeline { display:flex; height:14px; border-radius:7px; overflow:hidden; margin-top:10px; background:var(--rule); }
+  .timeline span { display:block; height:100%; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; font-size:.85rem; color:var(--soft); margin-top:6px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<main>
+  <h1>See the fall inference work</h1>
+  <p class="lede">Replays recorded pose sequences through the same engine the live camera uses. Watch the signals, the state change from drop to floor to confirmed fall, and the evidence behind each alert. Everyday movements like sitting, bending and lying in bed should raise nothing.</p>
+  <div class="bar">
+    <label for="scn">Scenario</label>
+    <select id="scn"></select>
+    <button class="primary" id="play" type="button">Play</button>
+    <label for="speed">Speed</label>
+    <select id="speed"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select>
+    <span class="desc" id="desc"></span>
+  </div>
+  <div class="grid">
+    <div>
+      <canvas id="cv" width="640" height="480" aria-label="Pose replay with inference overlay"></canvas>
+      <div class="timeline" id="tl" aria-hidden="true"></div>
+      <div class="legend">
+        <span><i style="background:#39ff14"></i>Monitoring</span><span><i style="background:#ffb300"></i>Rapid drop</span>
+        <span><i style="background:#ff8c00"></i>Verifying on floor</span><span><i style="background:#ff3b3b"></i>Fall</span>
+        <span><i style="background:#64b5f6"></i>Resting in bed</span>
+      </div>
+    </div>
+    <div class="log" aria-live="polite"><h2>What the engine decided</h2><div id="log"><p class="desc">Pick a scenario and press Play.</p></div></div>
+  </div>
+</main>
+<script src="static/js/fall-inference-engine.js"></script>
+<script src="fall_detection_tfjs.js"></script>
+<script>
+const COLORS = { normal:'#39ff14', no_person:'#9e9e9e', descent:'#ffb300', on_ground_check:'#ff8c00', fall_confirmed:'#ff3b3b', long_lie:'#ff1744', lying_in_bed:'#64b5f6' };
+const NAMES = { walk_across:'Walks across the room', sit_down_chair:'Sits down on a chair', sit_down_fast:'Drops quickly into a chair',
+  plop_low_sofa:'Flops onto a low sofa', bend_pick_up:'Bends to pick something up', squat:'Squats', kneel_to_pray:'Kneels to pray',
+  lie_down_in_bed_zone:'Lies down in bed (bed zone marked)', lie_down_in_bed_no_zone:'Lies down in bed (no zone marked)',
+  fall_sideways:'Hard fall to the side', fall_forward_toward_camera:'Falls toward the camera', fall_backward_away:'Falls backward, away from camera',
+  fall_then_gets_up:'Falls, then gets up', fall_long_lie:'Falls and lies still', slip_onto_bottom:'Slips onto their bottom',
+  slide_off_chair:'Slides slowly off a chair', lie_on_floor_deliberately:'Gets down onto the floor on purpose',
+  fall_behind_furniture:'Falls behind furniture', walk_out_of_frame:'Walks out of view', found_on_floor:'Already lying on the floor' };
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+let fixtures = [], timer = null;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+fetch('tests/fixtures/fall_scenarios.json').then(r => r.json()).then(fx => {
+  fixtures = fx;
+  document.getElementById('scn').innerHTML = fx.map((f, i) => `<option value="${i}">${esc(NAMES[f.name] || f.name)}</option>`).join('');
+  const pre = new URLSearchParams(location.search).get('s');
+  if (pre) { const i = fx.findIndex(f => f.name === pre); if (i >= 0) document.getElementById('scn').value = i; }
+  showDesc();
+  if (new URLSearchParams(location.search).get('autoplay')) play();
+});
+document.getElementById('scn').onchange = showDesc;
+function showDesc() {
+  const f = fixtures[document.getElementById('scn').value];
+  document.getElementById('desc').textContent = f ? `Expected: ${({none:'no alert', fall:'fall alert', check_in:'gentle check-in', 'fall+recovered':'fall, then got up', 'fall+long_lie':'fall, then lying still'})[f.expect]}` : '';
+}
+document.getElementById('play').onclick = play;
+
+function play() {
+  clearInterval(timer);
+  const f = fixtures[document.getElementById('scn').value];
+  const speed = +document.getElementById('speed').value;
+  const eng = new FallInferenceEngine({ sensitivity: 'medium', bedZones: f.bed_zones });
+  const tl = document.getElementById('tl'); tl.innerHTML = '';
+  const log = document.getElementById('log'); log.innerHTML = '';
+  let i = 0, events = 0;
+  const step = () => {
+    if (i >= f.frames.length) { clearInterval(timer); if (!events) log.innerHTML = '<p class="desc">No alerts raised.</p>'; return; }
+    const fr = f.frames[i++];
+    const r = eng.update(fr.t, fr.xy, fr.conf, fr.size);
+    ctx.fillStyle = '#222a3b'; ctx.fillRect(0, 0, 640, 480);
+    ctx.fillStyle = '#2c364c'; ctx.fillRect(0, 402, 640, 78);          // floor
+    drawZones(ctx, 640, 480, f.bed_zones, null);
+    if (fr.xy) drawPose(ctx, fr.xy.map((p, k) => ({ x: p[0], y: p[1], score: fr.conf[k] })), COLORS[r.state] || '#00e5ff');
+    drawOverlay(ctx, 640, 480, r, 15);
+    const seg = document.createElement('span');
+    seg.style.width = (100 / f.frames.length) + '%'; seg.style.background = COLORS[r.state] || '#999';
+    tl.appendChild(seg);
+    for (const e of r.events) {
+      events++;
+      const cls = e.type === 'fall_confirmed' || e.type === 'long_lie' ? 'fall' : e.type === 'recovered' ? 'ok' : 'rej';
+      const title = { fall_confirmed: `${(e.fall_type || 'fall').replace(/_/g, ' ')} (${e.severity}, ${Math.round(e.confidence * 100)}% confidence)`,
+        recovered: 'Got back up', long_lie: 'Lying still after the fall', candidate_rejected: 'Not a fall' }[e.type];
+      const items = e.evidence ? e.evidence.map(x => `<li>${x.passed ? '✔' : '•'} ${esc(x.text)}</li>`).join('') : '';
+      log.insertAdjacentHTML('beforeend', `<div class="ev"><b class="${cls}">${esc(title)}</b> at ${e.t.toFixed(1)} s<br>
+        <span class="desc">${esc(e.explanation || e.reason || '')}</span>${items ? `<ul>${items}</ul>` : ''}</div>`);
+    }
+  };
+  timer = setInterval(step, 1000 / 15 / speed);
+}
+</script>
+</body>
+</html>
